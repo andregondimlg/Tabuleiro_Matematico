@@ -1,6 +1,7 @@
+
 import pygame
 import os
-from constants import SCREEN, font, BLUE, RED, GREEN, GRAY
+from constants import SCREEN, font, BLUE, RED, GREEN, GRAY, YELLOW
 
 class Board:
     def __init__(self, x_start=50, y_start=50, square_size=70, squares_per_side=13):
@@ -23,6 +24,7 @@ class Board:
         except pygame.error as e:
             print(f"Erro ao carregar a imagem de fundo do tabuleiro: {e}")
             return None
+    
 
     def create_board(self):
         self.board_positions.clear()
@@ -51,7 +53,30 @@ class Board:
             x = self.x_start
             y = self.y_start + board_height - i * self.square_size
             rect = pygame.Rect(x, y, self.square_size, self.square_size)
+            self.board_positions.append(rect)    
+    '''
+    def create_board(self):
+        self.board_positions.clear()
+        
+        center_x = 420  
+        center_y = 400
+        initial_radius = 300
+        radius_increment = 8 
+
+        for i in range(self.squares_per_side * 4):  
+            
+            angle = (2 * math.pi / (self.squares_per_side * 4)) * i
+            
+           
+            radius = initial_radius + (i // self.squares_per_side) * radius_increment
+            
+            
+            x = center_x + int(radius * math.cos(angle))
+            y = center_y + int(radius * math.sin(angle))
+            
+            rect = pygame.Rect(x, y, self.square_size, self.square_size)
             self.board_positions.append(rect)
+        '''
 
     def draw(self):
         if self.background_image:
@@ -59,10 +84,12 @@ class Board:
         else:
             pygame.draw.rect(SCREEN, GRAY, (self.x_start, self.y_start, self.square_size * (self.squares_per_side -1), self.square_size * (self.squares_per_side -1)))
 
-        cores = [BLUE, RED, GREEN, GRAY]
+        cores = [BLUE, GREEN, YELLOW ,RED]
         for idx, square in enumerate(self.board_positions):
             cor = cores[(idx // 12) % 4]
             pygame.draw.rect(SCREEN, cor, square)
             pos_text = font.render(str(idx+1), True, (255, 255, 255))
             SCREEN.blit(pos_text, (square.x + square.width//2 - pos_text.get_width()//2,
                                    square.y + square.height//2 - pos_text.get_height()//2))
+
+

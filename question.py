@@ -1,5 +1,4 @@
 # question.py
-
 import pygame
 import random
 from constants import SCREEN, GRAY, BLACK, RED, font
@@ -43,7 +42,7 @@ class QuestionManager:
         interface_y = (HEIGHT - interface_height) // 2  # Centraliza verticalmente
 
         interface_rect = pygame.Rect(interface_x, interface_y, interface_width, interface_height)
-        pygame.draw.rect(SCREEN, GRAY, interface_rect)
+        pygame.draw.rect(SCREEN, GRAY, interface_rect,border_radius= 30)
         pygame.draw.rect(SCREEN, BLACK, interface_rect, 2)
 
         question = self.current_question

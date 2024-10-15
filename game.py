@@ -108,9 +108,9 @@ class Game:
                     self.question_manager.update_time_left()
                     if self.question_manager.is_time_up():
                         self.message = f"{self.current_player().name} - Tempo esgotado! Você errou a pergunta."
-                        self.current_player().move_back(3)
+                        self.current_player().move_back(result)
                         self.question_manager.show_question = False
-                        self.question_manager.question_answered = False  # Reseta o estado da pergunta
+                        self.question_manager.question_answered = False  #Reseta o estado da pergunta
                         self.next_player()
                     else:
                         self.question_manager.draw_question_interface()
@@ -131,7 +131,7 @@ class Game:
                                     self.next_player()
                                 else:
                                     self.message = f"{self.current_player().name} - Resposta incorreta! A resposta correta era: {self.question_manager.current_question['answer']}"
-                                    self.current_player().move_back(3)
+                                    self.current_player().move_back(result)
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False  # Reseta o estado
                                     self.next_player()
@@ -147,7 +147,6 @@ class Game:
                                     self.message = f"{self.current_player().name} completou uma volta!"
                                 else:
                                     self.message = ""
-                                # Verifica se é uma casa múltipla de 5
                                 if (self.current_player().position + 1) % 5 == 0:
                                     self.question_manager.get_new_question()
                                     if not self.question_manager.show_question:

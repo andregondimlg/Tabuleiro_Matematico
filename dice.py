@@ -47,7 +47,7 @@ class Dice:
             for func in draw_functions:
                 func()
             # Calcula o centro do tabuleiro
-            board_center_x, board_center_y = get_board_center(board)
+            board_center_x, board_center_y = 1735, 179
             if self.current_image:
                 dice_rect = self.current_image.get_rect(center=(board_center_x, board_center_y))
                 SCREEN.blit(self.current_image, dice_rect.topleft)
@@ -74,7 +74,7 @@ class Dice:
 
     def draw_result(self, board, message):
         if self.result is not None and self.current_image:
-            board_center_x, board_center_y = get_board_center(board)
+            board_center_x, board_center_y = 1735, 179
             dice_rect = self.current_image.get_rect(center=(board_center_x, board_center_y))
             SCREEN.blit(self.current_image, dice_rect.topleft)
 

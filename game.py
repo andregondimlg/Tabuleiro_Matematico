@@ -36,7 +36,7 @@ class Game:
             return None
 
     def load_game_background(self):
-        path = os.path.join('assets', 'images', 'game_background.jpg')
+        path = os.path.join('assets', 'images', 'Tabuleiro.png')
         try:
             image = pygame.image.load(path).convert()
             image = pygame.transform.scale(image, (SCREEN.get_width(), SCREEN.get_height()))
@@ -91,26 +91,24 @@ class Game:
                             self.in_menu = False
             else:
                 if self.game_background:
-                    SCREEN.blit(self.game_background, (0, 0))
+                    SCREEN.blit(self.game_background, (0, 0))  # Exibe o fundo do jogo
                 else:
                     SCREEN.fill(WHITE)
-                
-                self.board.draw()
-                
+
                 for player in self.players:
                     player.draw()
-                
+
                 self.draw_instructions()
-                
+
                 self.dice.draw_result(self.board, self.message)
 
                 if self.question_manager.show_question and self.question_manager.current_question:
                     self.question_manager.update_time_left()
                     if self.question_manager.is_time_up():
                         self.message = f"{self.current_player().name} - Tempo esgotado! Você errou a pergunta."
-                        self.current_player().move_back(result)
+                        self.current_player().move_back(self.dice.result)
                         self.question_manager.show_question = False
-                        self.question_manager.question_answered = False  #Reseta o estado da pergunta
+                        self.question_manager.question_answered = False
                         self.next_player()
                     else:
                         self.question_manager.draw_question_interface()
@@ -127,19 +125,19 @@ class Game:
                                 if selected_answer == self.question_manager.current_question["answer"]:
                                     self.message = f"{self.current_player().name} - Resposta correta!"
                                     self.question_manager.show_question = False
-                                    self.question_manager.question_answered = False  # Reseta o estado
+                                    self.question_manager.question_answered = False
                                     self.next_player()
                                 else:
                                     self.message = f"{self.current_player().name} - Resposta incorreta! A resposta correta era: {self.question_manager.current_question['answer']}"
-                                    self.current_player().move_back(result)
+                                    self.current_player().move_back(self.dice.result)
                                     self.question_manager.show_question = False
-                                    self.question_manager.question_answered = False  # Reseta o estado
+                                    self.question_manager.question_answered = False
                                     self.next_player()
                         elif event.key == pygame.K_SPACE and not self.dice.rolling and not self.question_manager.show_question:
                             self.dice.result = None
                             self.message = ""
-                            draw_funcs = [self.board.draw] + [p.draw for p in self.players] + [self.draw_instructions]
-                            result = self.dice.roll_dice_animation(self.board, draw_funcs)
+                            draw_funcs = [p.draw for p in self.players] + [self.draw_instructions]
+                            result = self.dice.roll_dice_animation(self.board, draw_funcs)  # Chama o método antigo
                             if result:
                                 self.dice.result = result
                                 completed_lap = self.current_player().move(result)
@@ -160,15 +158,11 @@ class Game:
     def start_game(self):
         color1 = PLAYER_COLORS[self.menu.player_colors["Jogador 1"]]
         color2 = PLAYER_COLORS[self.menu.player_colors["Jogador 2"]]
-        self.players.append(Player(self.board, "Jogador 1", color1))
-        self.players.append(Player(self.board, "Jogador 2", color2))
+        self.players.append(Player(self.board, "Jogador 1", color1, self.board.path_points))
+        self.players.append(Player(self.board, "Jogador 2", color2, self.board.path_points))
 
     def current_player(self):
         return self.players[self.current_player_index]
 
     def next_player(self):
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
-
-    def quit(self):
-        pygame.quit()
-        sys.exit()

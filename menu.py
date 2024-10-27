@@ -8,9 +8,12 @@ class Menu:
     def __init__(self):
         self.player_colors = {
             "Jogador 1": None,
-            "Jogador 2": None
+            "Jogador 2": None,
+            "Jogador 3": None,
+            "Jogador 4": None
         }
-        self.selected_player = "Jogador 1"
+        self.player_names = ["Jogador 1", "Jogador 2", "Jogador 3", "Jogador 4"]
+        self.selected_player_index = 0 
         self.ready = False
         self.background_image = self.load_background()
 
@@ -38,8 +41,8 @@ class Menu:
         instructions = font.render("Use as setas para alternar entre os jogadores.", True, (0, 0, 0))
         SCREEN.blit(instructions, (SCREEN.get_width()//2 - instructions.get_width()//2, 120))
 
-        # Indicação do jogador atual
-        player_indicator = font.render(f"Selecionando: {self.selected_player}", True, (0, 0, 0))
+        current_player = self.player_names[self.selected_player_index]
+        player_indicator = font.render(f"Selecionando: {current_player}", True, (0, 0, 0))
         SCREEN.blit(player_indicator, (SCREEN.get_width()//2 - player_indicator.get_width()//2, 160))
 
         # Opções de cores disponíveis
@@ -55,7 +58,7 @@ class Menu:
             rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
             pygame.draw.rect(SCREEN, color_value, rect)
             # Desenha borda se a cor estiver selecionada pelo jogador atual
-            if self.player_colors[self.selected_player] == color_name:
+            if self.player_colors[current_player] == color_name:
                 pygame.draw.rect(SCREEN, (0, 0, 0), rect, 5)  # Borda mais grossa
             else:
                 pygame.draw.rect(SCREEN, (0, 0, 0), rect, 2)  # Borda fina
@@ -64,20 +67,21 @@ class Menu:
             SCREEN.blit(color_text, (rect.x + rect.width//2 - color_text.get_width()//2, rect.y + rect.height + 10))
 
         # Exibe as cores selecionadas
-        player1_text = font.render(f"Jogador 1 - Cor: {self.player_colors['Jogador 1'] if self.player_colors['Jogador 1'] else 'Não selecionada'}", True, (0, 0, 0))
-        SCREEN.blit(player1_text, (SCREEN.get_width()//2 - player1_text.get_width()//2, 450))
-
-        player2_text = font.render(f"Jogador 2 - Cor: {self.player_colors['Jogador 2'] if self.player_colors['Jogador 2'] else 'Não selecionada'}", True, (0, 0, 0))
-        SCREEN.blit(player2_text, (SCREEN.get_width()//2 - player2_text.get_width()//2, 500))
+        y_positions = [450, 500, 550, 600]
+        for i, player_name in enumerate(self.player_names):
+            color = self.player_colors[player_name] if self.player_colors[player_name] else 'Não selecionada'
+            player_text = font.render(f"{player_name} - Cor: {color}", True, (0, 0, 0))
+            SCREEN.blit(player_text, (SCREEN.get_width()//2 - player_text.get_width()//2, y_positions[i]))
 
         # Mensagem para iniciar o jogo
-        if self.player_colors["Jogador 1"] and self.player_colors["Jogador 2"] and not self.ready:
+        if all(self.player_colors[player] for player in self.player_names) and not self.ready:
             ready_text = font.render("Pressione ENTER para começar o jogo", True, (0, 0, 0))
             SCREEN.blit(ready_text, (SCREEN.get_width()//2 - ready_text.get_width()//2, SCREEN.get_height() - 100))
 
         pygame.display.update()
 
     def handle_event(self, event):
+        current_player = self.player_names[self.selected_player_index]
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
             y_offset = 250
@@ -91,14 +95,16 @@ class Menu:
             for idx, color_name in enumerate(PLAYER_COLORS.keys()):
                 rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
                 if rect.collidepoint(mouse_x, mouse_y):
-                    # Verifica se a cor já está selecionada pelo outro jogador
-                    other_player = "Jogador 1" if self.selected_player == "Jogador 2" else "Jogador 2"
-                    if self.player_colors[other_player] != color_name:
-                        self.player_colors[self.selected_player] = color_name
+                    # Verifica se a cor já está selecionada por outro jogador
+                    if color_name not in self.player_colors.values():
+                        self.player_colors[current_player] = color_name
 
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN and self.player_colors["Jogador 1"] and self.player_colors["Jogador 2"]:
+            if event.key == pygame.K_RETURN and all(self.player_colors[player] for player in self.player_names):
                 self.ready = True
-            elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                # Alterna entre os jogadores
-                self.selected_player = "Jogador 1" if self.selected_player == "Jogador 2" else "Jogador 2"
+            elif event.key == pygame.K_LEFT:
+                # Alterna para o jogador anterior
+                self.selected_player_index = (self.selected_player_index - 1) % len(self.player_names)
+            elif event.key == pygame.K_RIGHT:
+                # Alterna para o próximo jogador
+                self.selected_player_index = (self.selected_player_index + 1) % len(self.player_names)

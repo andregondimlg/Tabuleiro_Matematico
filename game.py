@@ -156,10 +156,10 @@ class Game:
                 self.clock.tick(60)
 
     def start_game(self):
-        color1 = PLAYER_COLORS[self.menu.player_colors["Jogador 1"]]
-        color2 = PLAYER_COLORS[self.menu.player_colors["Jogador 2"]]
-        self.players.append(Player(self.board, "Jogador 1", color1, self.board.path_points))
-        self.players.append(Player(self.board, "Jogador 2", color2, self.board.path_points))
+        for player_name in self.menu.player_names:
+            color_name = self.menu.player_colors[player_name]
+            color = PLAYER_COLORS[color_name]
+            self.players.append(Player(self.board, player_name, color, self.board.path_points))
 
     def current_player(self):
         return self.players[self.current_player_index]

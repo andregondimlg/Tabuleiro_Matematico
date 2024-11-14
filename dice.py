@@ -1,10 +1,10 @@
-# dice.py
-
-import pygame
+import pygame 
 import random
 import os
 from constants import SCREEN, font, WHITE
 from utils import get_board_center
+
+pygame.mixer.init() 
 
 class Dice:
     def __init__(self):
@@ -12,6 +12,7 @@ class Dice:
         self.rolling = False
         self.dice_images = self.load_dice_images()
         self.current_image = None
+        self.roll_sound = self.load_roll_sound()
 
     def load_dice_images(self):
         images = {}
@@ -27,8 +28,19 @@ class Dice:
                 print(f"Imagem do dado {i} não encontrada.")
         return images
 
+    def load_roll_sound(self):
+        try:
+            sound_path = os.path.join('assets', 'sounds_effects', 'dice.mp3')
+            return pygame.mixer.Sound(sound_path)
+        except pygame.error as e:
+            print(f"Erro ao carregar o som do dado: {e}")
+            return None
+
     def roll_dice_animation(self, board, draw_functions):
         self.rolling = True
+        if self.roll_sound:
+            self.roll_sound.play()  # Toca o som ao iniciar a rolagem
+
         animation_cycles = 10  # Número de ciclos de troca de face
         cycle_delay = 100       # Tempo entre cada troca de face em milissegundos
         cycle_count = 0
@@ -46,10 +58,8 @@ class Dice:
 
             for func in draw_functions:
                 func()
-            # Calcula o centro do tabuleiro
-            board_center_x, board_center_y = 1735, 179
+            dice_rect = self.current_image.get_rect(center=(1734, 179))
             if self.current_image:
-                dice_rect = self.current_image.get_rect(center=(board_center_x, board_center_y))
                 SCREEN.blit(self.current_image, dice_rect.topleft)
             pygame.display.update()
 
@@ -66,7 +76,7 @@ class Dice:
         for func in draw_functions:
             func()
         if self.current_image:
-            dice_rect = self.current_image.get_rect(center=(board_center_x, board_center_y))
+            dice_rect = self.current_image.get_rect(center=(1734, 179))  # Posição fixa para o dado
             SCREEN.blit(self.current_image, dice_rect.topleft)
         pygame.display.update()
 
@@ -74,10 +84,10 @@ class Dice:
 
     def draw_result(self, board, message):
         if self.result is not None and self.current_image:
-            board_center_x, board_center_y = 1735, 179
-            dice_rect = self.current_image.get_rect(center=(board_center_x, board_center_y))
+            # Usando a posição fixa do dado
+            dice_rect = self.current_image.get_rect(center=(1734, 179))
             SCREEN.blit(self.current_image, dice_rect.topleft)
 
             if message:
                 message_text = font.render(message, True, (0, 0, 0))
-                SCREEN.blit(message_text, (board_center_x - message_text.get_width()//2, board_center_y + dice_rect.height//2))
+                SCREEN.blit(message_text, (700 - message_text.get_width()//2, 100 + dice_rect.height//2))

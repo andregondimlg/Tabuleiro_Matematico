@@ -25,6 +25,9 @@ class Game:
         self.menu_background = self.load_menu_background()
         self.game_background = self.load_game_background()
 
+        pygame.mixer.init()  # Inicializa o mixer de som
+        self.background_sound = self.load_background_sound()
+
     def load_menu_background(self):
         path = os.path.join('assets', 'images', 'menu_background.jpg')
         try:
@@ -44,6 +47,18 @@ class Game:
         except pygame.error as e:
             print(f"Erro ao carregar a imagem de fundo do jogo: {e}")
             return None
+
+    def load_background_sound(self):
+        music_path = os.path.join('assets', 'sounds_effects', 'teste.mp3') 
+        try:
+            pygame.mixer.music.load(music_path)  
+            pygame.mixer.music.set_volume(0.25)  
+            pygame.mixer.music.play(loops=-1, start=0.0)  # toca em loop
+            print("Música carregada e tocando.")
+            return True
+        except pygame.error as e:
+            print(f"Erro ao carregar ou tocar a música de fundo: {e}")
+            return False
 
     def draw_initial_screen(self):
         if self.menu_background:

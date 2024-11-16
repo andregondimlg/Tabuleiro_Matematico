@@ -58,7 +58,7 @@ class Dice:
 
             for func in draw_functions:
                 func()
-            dice_rect = self.current_image.get_rect(center=(1734, 179))
+            dice_rect = self.current_image.get_rect(center=(1742, 117))
             if self.current_image:
                 SCREEN.blit(self.current_image, dice_rect.topleft)
             pygame.display.update()
@@ -76,7 +76,7 @@ class Dice:
         for func in draw_functions:
             func()
         if self.current_image:
-            dice_rect = self.current_image.get_rect(center=(1734, 179))  # Posição fixa para o dado
+            dice_rect = self.current_image.get_rect(center=(1742, 117))  # Posição fixa para o dado
             SCREEN.blit(self.current_image, dice_rect.topleft)
         pygame.display.update()
 
@@ -85,7 +85,7 @@ class Dice:
     def draw_result(self, board, message):
         if self.result is not None and self.current_image:
             # Usando a posição fixa do dado
-            dice_rect = self.current_image.get_rect(center=(1734, 179))
+            dice_rect = self.current_image.get_rect(center=(1742, 117))
             SCREEN.blit(self.current_image, dice_rect.topleft)
 
             if message:

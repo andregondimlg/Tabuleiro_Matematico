@@ -26,7 +26,11 @@ class Game:
         self.game_background = self.load_game_background()
 
         pygame.mixer.init()  # Inicializa o mixer de som
-        self.background_sound = self.load_background_sound()
+
+        # carrega sons
+
+        self.background_sound = self.load_sound('sounds_effects/i wanna be yours.mp3', background=True)
+        self.keypress_sound = self.load_sound('sounds_effects/start.mp3')
 
     def load_menu_background(self):
         path = os.path.join('assets', 'images', 'menu_background.jpg')
@@ -39,7 +43,7 @@ class Game:
             return None
 
     def load_game_background(self):
-        path = os.path.join('assets', 'images', 'Tabuleiro.png')
+        path = os.path.join('assets', 'images', 'board_background.png')
         try:
             image = pygame.image.load(path).convert()
             image = pygame.transform.scale(image, (SCREEN.get_width(), SCREEN.get_height()))
@@ -48,24 +52,36 @@ class Game:
             print(f"Erro ao carregar a imagem de fundo do jogo: {e}")
             return None
 
-    def load_background_sound(self):
-        music_path = os.path.join('assets', 'sounds_effects', 'teste.mp3') 
+    def load_sound(self, file_path, background=False):
+        """
+        Carrega sons e tb inicia músicas de fundo em loop.
+        :param file_path: Caminho do arquivo de som relativo à pasta `assets`.
+        :param background: Define se o som será uma música de fundo.
+        :return: Objeto `pygame.mixer.Sound` ou `True` se música de fundo foi carregada.
+
+        """
+        sound_path = os.path.join('assets', file_path)
         try:
-            pygame.mixer.music.load(music_path)  
-            pygame.mixer.music.set_volume(0.25)  
-            pygame.mixer.music.play(loops=-1, start=0.0)  # toca em loop
-            print("Música carregada e tocando.")
-            return True
+            if background:
+                pygame.mixer.music.load(sound_path)
+                pygame.mixer.music.set_volume(0.25)
+                pygame.mixer.music.play(loops=-1, start=0.0)  # toca em loop
+                print(f"Música de fundo '{file_path}' carregada e tocando.")
+                return True
+            else:
+                sound = pygame.mixer.Sound(sound_path)
+                print(f"Som '{file_path}' carregado.")
+                return sound
         except pygame.error as e:
-            print(f"Erro ao carregar ou tocar a música de fundo: {e}")
-            return False
+            print(f"Erro ao carregar som '{file_path}': {e}")
+            return None
 
     def draw_initial_screen(self):
         if self.menu_background:
             SCREEN.blit(self.menu_background, (0, 0))
         else:
             SCREEN.fill(WHITE)
-        title_text = big_font.render("Bem-vindo ao Jogo de Tabuleiro Matemático!", True, BLACK)
+        title_text = big_font.render("Doze Destinos!", True, BLACK)
         instruction_text = font.render("Pressione qualquer tecla para começar.", True, BLACK)
         SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, SCREEN.get_height()//2 - 100))
         SCREEN.blit(instruction_text, (SCREEN.get_width()//2 - instruction_text.get_width()//2, SCREEN.get_height()//2))
@@ -94,6 +110,11 @@ class Game:
                     elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                         self.in_initial_screen = False
                         self.in_menu = True
+                        if self.keypress_sound:
+                            print("Tocando som de tecla...")
+                            self.keypress_sound.play()
+                        else:
+                            print("Erro: Som de tecla não carregado.")
             elif self.in_menu:
                 self.menu.draw()
                 for event in pygame.event.get():
@@ -106,7 +127,7 @@ class Game:
                             self.in_menu = False
             else:
                 if self.game_background:
-                    SCREEN.blit(self.game_background, (0, 0))  # Exibe o fundo do jogo
+                    SCREEN.blit(self.game_background, (0, 0))
                 else:
                     SCREEN.fill(WHITE)
 
@@ -152,7 +173,7 @@ class Game:
                             self.dice.result = None
                             self.message = ""
                             draw_funcs = [p.draw for p in self.players] + [self.draw_instructions]
-                            result = self.dice.roll_dice_animation(self.board, draw_funcs)  # Chama o método antigo
+                            result = self.dice.roll_dice_animation(self.board, draw_funcs)
                             if result:
                                 self.dice.result = result
                                 completed_lap = self.current_player().move(result)
@@ -167,8 +188,8 @@ class Game:
                                 else:
                                     self.next_player()
 
-                pygame.display.update()
-                self.clock.tick(60)
+            pygame.display.update()
+            self.clock.tick(60)
 
     def start_game(self):
         for player_name in self.menu.player_names:

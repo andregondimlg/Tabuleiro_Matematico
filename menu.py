@@ -1,5 +1,3 @@
-# menu.py
-
 import pygame
 import os
 from constants import SCREEN, font, big_font, PLAYER_COLORS, WHITE
@@ -13,9 +11,13 @@ class Menu:
             "Jogador 4": None
         }
         self.player_names = ["Jogador 1", "Jogador 2", "Jogador 3", "Jogador 4"]
-        self.selected_player_index = 0 
+        self.selected_player_index = 0
         self.ready = False
         self.background_image = self.load_background()
+        
+        # carrega os sons
+        self.select_sound = self.load_sound('select.mp3')  # som ao selecionar uma cor
+        self.start_game_sound = self.load_sound('start.mp3')  # som ao iniciar o jogo
 
     def load_background(self):
         path = os.path.join('assets', 'images', 'color_selection_background.jpg')
@@ -27,17 +29,27 @@ class Menu:
             print(f"Erro ao carregar a imagem de fundo da seleção de cores: {e}")
             return None
 
+    # função generica onde carrega um som a partir de um arquivo ( file_name )
+    
+    def load_sound(self, file_name):
+        sound_path = os.path.join('assets', 'sounds_effects', file_name)
+        try:
+            sound = pygame.mixer.Sound(sound_path)
+            print(f"Som {file_name} carregado.")
+            return sound
+        except pygame.error as e:
+            print(f"Erro ao carregar o som {file_name}: {e}")
+            return None
+
     def draw(self):
         if self.background_image:
             SCREEN.blit(self.background_image, (0, 0))
         else:
             SCREEN.fill(WHITE)
         
-        # Título
         title_text = big_font.render("Seleção de Cores", True, (0, 0, 0))
         SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, 50))
 
-        # Instruções
         instructions = font.render("Use as setas para alternar entre os jogadores.", True, (0, 0, 0))
         SCREEN.blit(instructions, (SCREEN.get_width()//2 - instructions.get_width()//2, 120))
 
@@ -45,7 +57,6 @@ class Menu:
         player_indicator = font.render(f"Selecionando: {current_player}", True, (0, 0, 0))
         SCREEN.blit(player_indicator, (SCREEN.get_width()//2 - player_indicator.get_width()//2, 160))
 
-        # Opções de cores disponíveis
         y_offset = 250
         box_width = 100
         box_height = 100
@@ -98,13 +109,16 @@ class Menu:
                     # Verifica se a cor já está selecionada por outro jogador
                     if color_name not in self.player_colors.values():
                         self.player_colors[current_player] = color_name
+                        if self.select_sound:
+                            self.select_sound.play()
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN and all(self.player_colors[player] for player in self.player_names):
                 self.ready = True
+                # Toca som de início do jogo
+                if self.start_game_sound:
+                    self.start_game_sound.play()
             elif event.key == pygame.K_LEFT:
-                # Alterna para o jogador anterior
                 self.selected_player_index = (self.selected_player_index - 1) % len(self.player_names)
             elif event.key == pygame.K_RIGHT:
-                # Alterna para o próximo jogador
                 self.selected_player_index = (self.selected_player_index + 1) % len(self.player_names)

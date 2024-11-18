@@ -27,8 +27,7 @@ class Game:
 
         pygame.mixer.init()  # Inicializa o mixer de som
 
-        # carrega sons
-
+        # Carrega sons
         self.background_sound = self.load_sound('sounds_effects/i wanna be yours.mp3', background=True)
         self.keypress_sound = self.load_sound('sounds_effects/start.mp3')
 
@@ -53,28 +52,78 @@ class Game:
             return None
 
     def load_sound(self, file_path, background=False):
-        """
-        Carrega sons e tb inicia músicas de fundo em loop.
-        :param file_path: Caminho do arquivo de som relativo à pasta `assets`.
-        :param background: Define se o som será uma música de fundo.
-        :return: Objeto `pygame.mixer.Sound` ou `True` se música de fundo foi carregada.
-
-        """
         sound_path = os.path.join('assets', file_path)
         try:
             if background:
                 pygame.mixer.music.load(sound_path)
                 pygame.mixer.music.set_volume(0.25)
-                pygame.mixer.music.play(loops=-1, start=0.0)  # toca em loop
-                print(f"Música de fundo '{file_path}' carregada e tocando.")
+                pygame.mixer.music.play(loops=-1, start=0.0)  # Toca em loop
                 return True
             else:
                 sound = pygame.mixer.Sound(sound_path)
-                print(f"Som '{file_path}' carregado.")
                 return sound
         except pygame.error as e:
             print(f"Erro ao carregar som '{file_path}': {e}")
             return None
+
+    def show_message(self, text, duration=2000):
+        window_width, window_height = 720, 80
+        window_x = (SCREEN.get_width() - window_width) // 2
+        window_y = SCREEN.get_height() - window_height - 150  # posição inferior da janela
+
+        # Criação da superfície de mensagem com bordas arredondadas
+        message_surface = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
+        pygame.draw.rect(
+            message_surface,
+            (0, 0, 0, 180),  # Fundo semi-transparente
+            (0, 0, window_width, window_height),
+            border_radius=25
+        )
+
+        # Divide o texto em linhas para caber na janela
+        message_font = pygame.font.Font(None, 36)
+        words = text.split(" ")
+        lines = []
+        current_line = ""
+        for word in words:
+            test_line = current_line + " " + word if current_line else word
+            if message_font.size(test_line)[0] <= window_width - 20:
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+        if current_line:
+            lines.append(current_line)
+
+        # Calcular a posição inicial para centralizar verticalmente
+        total_text_height = sum(message_font.size(line)[1] for line in lines)
+        y_offset = (window_height - total_text_height) // 2  # Centraliza verticalmente
+
+        # Renderiza as linhas na superfície
+        for line in lines:
+            text_rendered = message_font.render(line, True, WHITE)
+            text_rect = text_rendered.get_rect(center=(window_width // 2, y_offset))
+            message_surface.blit(text_rendered, text_rect)
+            y_offset += message_font.size(line)[1]  # Ajusta o deslocamento para a próxima linha
+
+        SCREEN.blit(message_surface, (window_x, window_y))
+        pygame.display.update()
+        pygame.time.delay(duration)
+
+    def fade_in_out(self, fade_duration=150, fade_out=True):
+        fade_surface = pygame.Surface((SCREEN.get_width(), SCREEN.get_height()))
+        fade_surface.fill((255, 255, 255))
+        clock = pygame.time.Clock()
+        total_steps = fade_duration // 16
+        alpha_step = 255 // total_steps
+        alpha = 100 if fade_out else 0  # Mais suave com valor inicial de 100
+
+        for _ in range(total_steps):
+            fade_surface.set_alpha(alpha)
+            SCREEN.blit(fade_surface, (0, 0))
+            pygame.display.update()
+            alpha -= alpha_step if fade_out else -alpha_step
+            clock.tick(60)
 
     def draw_initial_screen(self):
         if self.menu_background:
@@ -91,7 +140,6 @@ class Game:
         instructions = [
             f"Vez do {self.current_player().name}",
             "Pressione ESPAÇO para rolar o dado.",
-            "Objetivo: Chegar ao final do tabuleiro."
         ]
         margin = 50
         for i, text in enumerate(instructions):
@@ -108,13 +156,12 @@ class Game:
                     if event.type == pygame.QUIT:
                         self.running = False
                     elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                        if self.keypress_sound:
+                            self.keypress_sound.play()
+                        self.fade_in_out(fade_out=True)
                         self.in_initial_screen = False
                         self.in_menu = True
-                        if self.keypress_sound:
-                            print("Tocando som de tecla...")
-                            self.keypress_sound.play()
-                        else:
-                            print("Erro: Som de tecla não carregado.")
+                        self.fade_in_out(fade_out=False)
             elif self.in_menu:
                 self.menu.draw()
                 for event in pygame.event.get():
@@ -135,13 +182,12 @@ class Game:
                     player.draw()
 
                 self.draw_instructions()
-
                 self.dice.draw_result(self.board, self.message)
 
                 if self.question_manager.show_question and self.question_manager.current_question:
                     self.question_manager.update_time_left()
                     if self.question_manager.is_time_up():
-                        self.message = f"{self.current_player().name} - Tempo esgotado! Você errou a pergunta."
+                        self.show_message(f"{self.current_player().name} - Tempo esgotado! Você errou a pergunta.")
                         self.current_player().move_back(self.dice.result)
                         self.question_manager.show_question = False
                         self.question_manager.question_answered = False
@@ -159,12 +205,12 @@ class Game:
                                 self.question_manager.question_answered = True
                                 selected_answer = self.question_manager.current_question["options"][selected_option]
                                 if selected_answer == self.question_manager.current_question["answer"]:
-                                    self.message = f"{self.current_player().name} - Resposta correta!"
+                                    self.show_message(f"{self.current_player().name} - Resposta correta!")
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False
                                     self.next_player()
                                 else:
-                                    self.message = f"{self.current_player().name} - Resposta incorreta! A resposta correta era: {self.question_manager.current_question['answer']}"
+                                    self.show_message(f"{self.current_player().name} - Resposta incorreta! A resposta correta era: {self.question_manager.current_question['answer']}")
                                     self.current_player().move_back(self.dice.result)
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False
@@ -178,13 +224,9 @@ class Game:
                                 self.dice.result = result
                                 completed_lap = self.current_player().move(result)
                                 if completed_lap:
-                                    self.message = f"{self.current_player().name} completou uma volta!"
-                                else:
-                                    self.message = ""
-                                if (self.current_player().position + 1) % 5 == 0:
+                                    self.show_message(f"{self.current_player().name} completou uma volta!")
+                                if (self.current_player().position + 1) % 2 == 0: # perguntas aparecem apenas quando a casa é par.
                                     self.question_manager.get_new_question()
-                                    if not self.question_manager.show_question:
-                                        self.message = "Sem mais perguntas disponíveis."
                                 else:
                                     self.next_player()
 

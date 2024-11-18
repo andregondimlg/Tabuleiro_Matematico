@@ -30,7 +30,6 @@ class Menu:
             return None
 
     # função generica onde carrega um som a partir de um arquivo ( file_name )
-    
     def load_sound(self, file_name):
         sound_path = os.path.join('assets', 'sounds_effects', file_name)
         try:
@@ -91,6 +90,32 @@ class Menu:
 
         pygame.display.update()
 
+    def fade_in_out(self, fade_duration=150, fade_out=True):
+        # Cria a superfície de transição com suporte para alfa (transparência)
+        fade_surface = pygame.Surface((SCREEN.get_width(), SCREEN.get_height()))
+        fade_surface.fill((255, 255, 255, 0))  # Cor branca
+        fade_surface.set_alpha(0 if fade_out else 255)  # Se for fade-in começa transparente, se for fade-out começa branco
+
+        clock = pygame.time.Clock()
+        total_steps = fade_duration // 16  # Número de passos do efeito (aproximadamente 60 FPS)
+        alpha_step = 255 // total_steps  # Passo de alteração do alpha a cada quadro
+        
+        alpha = 100 if fade_out else 0  # Se for fade-out, começa branco (255), e fade-in começa transparente (0)
+
+        for _ in range(total_steps):
+            fade_surface.set_alpha(alpha)  # Define a transparência da superfície
+            SCREEN.blit(fade_surface, (0, 0))  # Aplica a superfície de transição
+            pygame.display.update()
+            
+            # Altera o alpha de acordo com o tipo de fade
+            alpha -= alpha_step if fade_out else -alpha_step
+            clock.tick(60)  # Mantém a taxa de 60 FPS
+        
+        # Garantir que a opacidade final seja 0 ou 255
+        fade_surface.set_alpha(0 if fade_out else 255)
+        SCREEN.blit(fade_surface, (0, 0))  # Aplica o último quadro da transição
+        pygame.display.update()  # Atualiza a tela para refletir a transição final
+
     def handle_event(self, event):
         current_player = self.player_names[self.selected_player_index]
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -114,10 +139,13 @@ class Menu:
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN and all(self.player_colors[player] for player in self.player_names):
+                # Realiza o efeito de transição (fade-out) antes de iniciar o jogo
+                self.fade_in_out(fade_out=True)
                 self.ready = True
                 # Toca som de início do jogo
                 if self.start_game_sound:
                     self.start_game_sound.play()
+
             elif event.key == pygame.K_LEFT:
                 self.selected_player_index = (self.selected_player_index - 1) % len(self.player_names)
             elif event.key == pygame.K_RIGHT:

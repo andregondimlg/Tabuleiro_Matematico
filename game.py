@@ -66,6 +66,80 @@ class Game:
             print(f"Erro ao carregar som '{file_path}': {e}")
             return None
 
+    def draw_text_centered(self, surface, text, font, rect, color):
+        """
+        Desenha um texto centralizado dentro de um retângulo.
+        """
+        words = text.split(" ")
+        lines = []
+        current_line = ""
+
+        for word in words:
+            test_line = current_line + " " + word if current_line else word
+            if font.size(test_line)[0] <= rect.width - 20:  # Margem de 20px
+                current_line = test_line
+            else:
+                lines.append(current_line)
+                current_line = word
+
+        if current_line:
+            lines.append(current_line)
+
+        total_text_height = sum(font.size(line)[1] for line in lines)
+        y_offset = rect.y + (rect.height - total_text_height) // 2
+
+        for line in lines:
+            text_surface = font.render(line, True, color)
+            text_rect = text_surface.get_rect(center=(rect.x + rect.width // 2, y_offset))
+            surface.blit(text_surface, text_rect)
+            y_offset += font.size(line)[1]
+
+    def draw_question_interface(self):
+        """
+        Desenha a interface para exibir a pergunta atual.
+        """
+        if not self.question_manager.current_question:
+            return
+
+        # Configurações da interface
+        WIDTH, HEIGHT = SCREEN.get_size()
+        interface_width, interface_height = int(WIDTH * 0.7), int(HEIGHT * 0.5)  # Popup maior (70% da largura, 50% da altura)
+        interface_x, interface_y = (WIDTH - interface_width) // 2, (HEIGHT - interface_height) // 2  # Recalcula centralização
+        
+        # Cria a superfície transparente
+        question_rect = pygame.Rect(interface_x, interface_y, interface_width, interface_height)
+        question_surface = pygame.Surface((interface_width, interface_height), pygame.SRCALPHA)
+        question_surface.fill((128, 128, 128, 220))  # Fundo cinza semitransparente
+        pygame.draw.rect(question_surface, BLACK, question_surface.get_rect(), 2, border_radius=10)
+
+        # Renderiza a pergunta
+        self.draw_text_centered(
+            question_surface,
+            self.question_manager.current_question["text"],  # Pergunta atual
+            font,
+            question_surface.get_rect(),  # Centraliza no retângulo
+            WHITE
+        )
+
+        # Renderiza as opções
+        option_rect_height = 40  # Altura de cada opção
+        for i, option in enumerate(self.question_manager.current_question["options"]):
+            option_rect = pygame.Rect(
+                interface_x + 20,
+                interface_y + interface_height // 2 + i * (option_rect_height + 10),
+                interface_width - 40,
+                option_rect_height
+            )
+            pygame.draw.rect(SCREEN, (200, 200, 200), option_rect)  # Retângulo da opção
+            pygame.draw.rect(SCREEN, BLACK, option_rect, 2)  # Borda
+            self.draw_text_centered(SCREEN, option, font, option_rect, BLACK)
+
+        # Exibe a interface na tela
+        SCREEN.blit(question_surface, question_rect.topleft)
+
+    # Restante do código continua igual...
+
+
     def show_message(self, text, duration=2000):
         window_width, window_height = 720, 80
         window_x = (SCREEN.get_width() - window_width) // 2
@@ -225,7 +299,7 @@ class Game:
                                 completed_lap = self.current_player().move(result)
                                 if completed_lap:
                                     self.show_message(f"{self.current_player().name} completou uma volta!")
-                                if (self.current_player().position + 1) % 2 == 0: # perguntas aparecem apenas quando a casa é par.
+                                if (self.current_player().position + 1) % 1 == 0: # perguntas aparecem apenas quando a casa é par.
                                     self.question_manager.get_new_question()
                                 else:
                                     self.next_player()
@@ -244,3 +318,8 @@ class Game:
 
     def next_player(self):
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
+
+
+    def habilidades (self):
+        for Player_name in self.menu.player_names:
+            self.show_message(f"{self.current_player().name}precione 5 para usar a habilidade")

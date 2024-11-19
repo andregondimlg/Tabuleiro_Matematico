@@ -55,7 +55,7 @@ class Menu:
         else:
             SCREEN.fill(WHITE)
         
-        title_text = big_font.render("Seleção de Cores", True, (0, 0, 0))
+        title_text = big_font.render("Seleção de Personagens", True, (0, 0, 0))
         SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, 50))
 
         instructions = font.render("Use as setas para alternar entre os jogadores.", True, (0, 0, 0))
@@ -95,8 +95,8 @@ class Menu:
         # Exibe as cores selecionadas
         y_positions = [450, 500, 550, 600]
         for i, player_name in enumerate(self.player_names):
-            color = self.player_colors[player_name] if self.player_colors[player_name] else 'Não selecionada'
-            player_text = font.render(f"{player_name} - Cor: {color}", True, (0, 0, 0))
+            personagem = self.player_colors[player_name] if self.player_colors[player_name] else 'Não selecionada'
+            player_text = font.render(f"{player_name} - Personagem: {personagem}", True, (0, 0, 0))
             SCREEN.blit(player_text, (SCREEN.get_width()//2 - player_text.get_width()//2, y_positions[i]))
 
         # Mensagem para iniciar o jogo

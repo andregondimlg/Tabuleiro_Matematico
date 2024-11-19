@@ -94,51 +94,6 @@ class Game:
             surface.blit(text_surface, text_rect)
             y_offset += font.size(line)[1]
 
-    def draw_question_interface(self):
-        """
-        Desenha a interface para exibir a pergunta atual.
-        """
-        if not self.question_manager.current_question:
-            return
-
-        # Configurações da interface
-        WIDTH, HEIGHT = SCREEN.get_size()
-        interface_width, interface_height = int(WIDTH * 0.7), int(HEIGHT * 0.5)  # Popup maior (70% da largura, 50% da altura)
-        interface_x, interface_y = (WIDTH - interface_width) // 2, (HEIGHT - interface_height) // 2  # Recalcula centralização
-        
-        # Cria a superfície transparente
-        question_rect = pygame.Rect(interface_x, interface_y, interface_width, interface_height)
-        question_surface = pygame.Surface((interface_width, interface_height), pygame.SRCALPHA)
-        question_surface.fill((128, 128, 128, 220))  # Fundo cinza semitransparente
-        pygame.draw.rect(question_surface, BLACK, question_surface.get_rect(), 2, border_radius=10)
-
-        # Renderiza a pergunta
-        self.draw_text_centered(
-            question_surface,
-            self.question_manager.current_question["text"],  # Pergunta atual
-            font,
-            question_surface.get_rect(),  # Centraliza no retângulo
-            WHITE
-        )
-
-        # Renderiza as opções
-        option_rect_height = 40  # Altura de cada opção
-        for i, option in enumerate(self.question_manager.current_question["options"]):
-            option_rect = pygame.Rect(
-                interface_x + 20,
-                interface_y + interface_height // 2 + i * (option_rect_height + 10),
-                interface_width - 40,
-                option_rect_height
-            )
-            pygame.draw.rect(SCREEN, (200, 200, 200), option_rect)  # Retângulo da opção
-            pygame.draw.rect(SCREEN, BLACK, option_rect, 2)  # Borda
-            self.draw_text_centered(SCREEN, option, font, option_rect, BLACK)
-
-        # Exibe a interface na tela
-        SCREEN.blit(question_surface, question_rect.topleft)
-
-    # Restante do código continua igual...
-
 
     def show_message(self, text, duration=2000):
         window_width, window_height = 720, 80

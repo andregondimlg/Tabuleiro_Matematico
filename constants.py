@@ -15,11 +15,11 @@ YELLOW = (255, 215, 0)
 GRAY = (200, 200, 200)
 
 
-PLAYER_COLORS = {
-    "Branco": WHITE,
-    "Vermelho": RED,
-    "Amarelo": YELLOW,
-    "Verde": GREEN
+PLAYER_COLORS = { # personagens
+    "Thiago": WHITE,
+    "Andre": RED,
+    "Rosinha": YELLOW,
+    "Ureia": GREEN
 }
 
 font = pygame.font.Font(None, 36)

@@ -16,10 +16,10 @@ GRAY = (200, 200, 200)
 
 
 PLAYER_COLORS = {
-    "Branco": WHITE,
-    "Vermelho": RED,
-    "Amarelo": YELLOW,
-    "Verde": GREEN
+    "Branco-Andarilho": WHITE,
+    "Vermelho-Mago ": RED,
+    "Amarelo-Gladiador": YELLOW,
+    "Verde-Paladino": GREEN
 }
 
 font = pygame.font.Font(None, 36)

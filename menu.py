@@ -1,8 +1,17 @@
 import pygame
 import os
-from constants import SCREEN, font, big_font, PLAYER_COLORS, WHITE
+from constants import SCREEN, font, big_font, PLAYER_COLORS, WHITE, BLACK, RED
+from questions_database import habilidades, COLOR_DESCRIPTIONS
+
 
 class Menu:
+    def __init__(self):
+        # Inicializa a lista de perguntas e configurações
+        self.questions = habilidades.copy()  # Copia a lista de perguntas do banco de dados
+        self.current_question = None  # Pergunta atual
+        self.question_answered = False  # Controle se a pergunta foi respondida
+        self.show_question = False  # Controle de exibição da pergunta
+
     def __init__(self):
         self.player_colors = {
             "Jogador 1": None,
@@ -64,10 +73,18 @@ class Menu:
         total_width = num_colors * box_width + (num_colors - 1) * spacing
         x_offset = (SCREEN.get_width() - total_width) // 2  # Centraliza horizontalmente
 
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
         for idx, (color_name, color_value) in enumerate(PLAYER_COLORS.items()):
             rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
             pygame.draw.rect(SCREEN, color_value, rect)
-            # Desenha borda se a cor estiver selecionada pelo jogador atual
+            
+           # Verifica se o mouse está sobre o retângulo
+            if rect.collidepoint(mouse_x, mouse_y):
+                habilidade_texto = COLOR_DESCRIPTIONS.get(color_name, "FOCO desconhecida.")
+                self.Menu_habilidade(rect, habilidade_texto)
+
+           
             if self.player_colors[current_player] == color_name:
                 pygame.draw.rect(SCREEN, (0, 0, 0), rect, 5)  # Borda mais grossa
             else:
@@ -150,3 +167,37 @@ class Menu:
                 self.selected_player_index = (self.selected_player_index - 1) % len(self.player_names)
             elif event.key == pygame.K_RIGHT:
                 self.selected_player_index = (self.selected_player_index + 1) % len(self.player_names)
+    
+    
+    def Menu_habilidade(self, rect, habilidade):
+        """
+        Exibe um menu de habilidades próximo ao retângulo.
+        """
+        # Configura as dimensões do menu
+        menu_width = 200
+        menu_height = 150
+
+        # Calcula a posição do menu com base na posição do retângulo
+        menu_x = rect.x + rect.width + 10  # À direita do retângulo
+        menu_y = rect.y
+
+        # Ajusta o menu para não ultrapassar os limites da tela
+        if menu_x + menu_width > SCREEN.get_width():
+            menu_x = rect.x - menu_width - 10  # Move para a esquerda se ultrapassar o limite direito
+
+        if menu_y + menu_height > SCREEN.get_height():
+            menu_y = SCREEN.get_height() - menu_height  # Ajusta para cima se ultrapassar o limite inferior
+
+        # Cria uma superfície transparente para o menu
+        transparent_surface = pygame.Surface((menu_width, menu_height), pygame.SRCALPHA)
+        transparent_surface.fill((128, 128, 128, 220))  # Fundo cinza semitransparente
+
+        # Desenha a borda preta
+        pygame.draw.rect(transparent_surface, BLACK, transparent_surface.get_rect(), 2, border_radius=10)
+
+        # Adiciona o texto da habilidade no menu
+        habilidade_text = font.render(habilidade, True, BLACK)
+        transparent_surface.blit(habilidade_text, (10, 10))  # Texto posicionado no menu
+
+        # Renderiza o menu na tela principal
+        SCREEN.blit(transparent_surface, (menu_x, menu_y))

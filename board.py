@@ -8,6 +8,7 @@ class Board:
     def generate_path_points(self):
         """gera uma lista de coordenadas x e y para os pontos de caminho do tabuleiro."""
         path_points = [
+            {"casa": 0,  "x": 350, "y": 285},
             {"casa": 1,  "x": 466, "y": 281},
             {"casa": 2,  "x": 609, "y": 286},
             {"casa": 3,  "x": 762, "y": 292},

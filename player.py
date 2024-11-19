@@ -29,3 +29,4 @@ class Player:
             # Desenha um círculo com uma borda para destacar o jogador
             pygame.draw.circle(SCREEN, self.color, (square["x"], square["y"]), 22)
             pygame.draw.circle(SCREEN, BLACK, (square["x"], square["y"]), 22, 2)  # Borda preta
+    

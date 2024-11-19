@@ -59,10 +59,10 @@ habilidades = [
 
 ]
 COLOR_DESCRIPTIONS = {
-    "White": "Elimina duas alternativas quando usado",
-    "RED": "Avança o dobro de casas que você tirar, caso acerte a pergunta",
-    "Green": "O jogador pode trocar sua pergunta uma vez",
-    "Yellow": "Ganha bonus de acordo com a velocidade de resposta"
+    "Branco": "Elimina duas alternativas quando usado",
+    "Vermelho": "Avança o dobro de casas que você tirar, caso acerte a pergunta",
+    "Verde": "O jogador pode trocar sua pergunta",
+    "Amarelo": "Ganha bonus de acordo com a velocidade de resposta"
 }
 
 

@@ -78,7 +78,6 @@ class Menu:
         for idx, (color_name, color_value) in enumerate(PLAYER_COLORS.items()):
             rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
             pygame.draw.rect(SCREEN, color_value, rect)
-            
            # Verifica se o mouse está sobre o retângulo
             if rect.collidepoint(mouse_x, mouse_y):
                 habilidade_texto = COLOR_DESCRIPTIONS.get(color_name, "FOCO desconhecida.")
@@ -171,22 +170,26 @@ class Menu:
     
     def Menu_habilidade(self, rect, habilidade):
         """
-        Exibe um menu de habilidades próximo ao retângulo.
+        Exibe um menu de habilidades ajustado ao retângulo.
         """
-        # Configura as dimensões do menu
-        menu_width = 200
-        menu_height = 150
+        # Calcula o tamanho do texto renderizado
+        habilidade_text_surface = font.render(habilidade, True, BLACK)
+        text_width, text_height = habilidade_text_surface.get_size()
+
+        # Configura as dimensões do menu baseadas no tamanho do texto
+        padding = 20  # Espaçamento extra ao redor do texto
+        menu_width = max(text_width + padding, rect.width)  # Largura mínima igual ao retângulo
+        menu_height = text_height + padding
 
         # Calcula a posição do menu com base na posição do retângulo
-        menu_x = rect.x + rect.width + 10  # À direita do retângulo
-        menu_y = rect.y
+        menu_x = rect.x
+        menu_y = rect.y - menu_height - 10  # Acima do retângulo
 
         # Ajusta o menu para não ultrapassar os limites da tela
         if menu_x + menu_width > SCREEN.get_width():
-            menu_x = rect.x - menu_width - 10  # Move para a esquerda se ultrapassar o limite direito
-
-        if menu_y + menu_height > SCREEN.get_height():
-            menu_y = SCREEN.get_height() - menu_height  # Ajusta para cima se ultrapassar o limite inferior
+            menu_x = SCREEN.get_width() - menu_width
+        if menu_y < 0:
+            menu_y = rect.y + rect.height + 10  # Move para baixo se ultrapassar o limite superior
 
         # Cria uma superfície transparente para o menu
         transparent_surface = pygame.Surface((menu_width, menu_height), pygame.SRCALPHA)
@@ -196,8 +199,9 @@ class Menu:
         pygame.draw.rect(transparent_surface, BLACK, transparent_surface.get_rect(), 2, border_radius=10)
 
         # Adiciona o texto da habilidade no menu
-        habilidade_text = font.render(habilidade, True, BLACK)
-        transparent_surface.blit(habilidade_text, (10, 10))  # Texto posicionado no menu
+        text_x = (menu_width - text_width) // 2  # Centraliza o texto horizontalmente
+        text_y = (menu_height - text_height) // 2  # Centraliza o texto verticalmente
+        transparent_surface.blit(habilidade_text_surface, (text_x, text_y))
 
         # Renderiza o menu na tela principal
         SCREEN.blit(transparent_surface, (menu_x, menu_y))

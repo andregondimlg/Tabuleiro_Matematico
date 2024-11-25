@@ -19,16 +19,18 @@ class Game:
         self.running = True
         self.in_initial_screen = True
         self.in_menu = False
+        self.in_player_count_screen = False
         self.current_player_index = 0
         self.message = ""
         self.menu = Menu()
         self.menu_background = self.load_menu_background()
         self.game_background = self.load_game_background()
+        self.player_count = 0
 
         pygame.mixer.init()  # Inicializa o mixer de som
 
         # Carrega sons
-        self.background_sound = self.load_sound('sounds_effects/i wanna be yours.mp3', background=True)
+        self.background_sound = self.load_sound('sounds_effects/fall.mp3', background=True)
         self.keypress_sound = self.load_sound('sounds_effects/start.mp3')
 
     def load_menu_background(self):
@@ -56,11 +58,12 @@ class Game:
         try:
             if background:
                 pygame.mixer.music.load(sound_path)
-                pygame.mixer.music.set_volume(0.25)
+                pygame.mixer.music.set_volume(0.75)
                 pygame.mixer.music.play(loops=-1, start=0.0)  # Toca em loop
                 return True
             else:
                 sound = pygame.mixer.Sound(sound_path)
+                sound.set_volume(0.60)
                 return sound
         except pygame.error as e:
             print(f"Erro ao carregar som '{file_path}': {e}")
@@ -177,6 +180,18 @@ class Game:
             y = SCREEN.get_height() - (150 - i * 30)
             SCREEN.blit(instruction_text, (x, y))
 
+    def draw_player_count_screen(self):
+
+         # tela para seleção do número de jogadores.
+
+        SCREEN.fill(WHITE)
+        title_text = big_font.render("Selecione o número de jogadores", True, BLACK)
+        instruction_text = font.render("Use as teclas 2, 3 ou 4 para selecionar a quantidade de jogadores.", True, BLACK)
+        SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, SCREEN.get_height()//2 - 100))
+        SCREEN.blit(instruction_text, (SCREEN.get_width()//2 - instruction_text.get_width()//2, SCREEN.get_height()//2))
+
+        pygame.display.update()
+
     def main_loop(self):
         while self.running:
             if self.in_initial_screen:
@@ -189,8 +204,21 @@ class Game:
                             self.keypress_sound.play()
                         self.fade_in_out(fade_out=True)
                         self.in_initial_screen = False
-                        self.in_menu = True
+                        self.in_player_count_screen = True  # Ir para a tela de número de jogadores
                         self.fade_in_out(fade_out=False)
+            elif self.in_player_count_screen:
+                self.draw_player_count_screen()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key in [pygame.K_2, pygame.K_3, pygame.K_4]:
+                            self.player_count = int(event.unicode)
+                            self.menu.player_names = self.menu.player_names[:self.player_count]  # Ajusta o número de jogadores no menu
+                            self.in_player_count_screen = False
+                            self.in_menu = True  # Ir para o menu de seleção de personagens
+                            if self.keypress_sound:
+                                self.keypress_sound.play()
             elif self.in_menu:
                 self.menu.draw()
                 for event in pygame.event.get():
@@ -254,7 +282,7 @@ class Game:
                                 completed_lap = self.current_player().move(result)
                                 if completed_lap:
                                     self.show_message(f"{self.current_player().name} completou uma volta!")
-                                if (self.current_player().position + 1) % 1 == 0: # perguntas aparecem apenas quando a casa é par.
+                                if (self.current_player().position + 1) % 1 == 0:
                                     self.question_manager.get_new_question()
                                 else:
                                     self.next_player()

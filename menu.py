@@ -43,6 +43,7 @@ class Menu:
         sound_path = os.path.join('assets', 'sounds_effects', file_name)
         try:
             sound = pygame.mixer.Sound(sound_path)
+            sound.set_volume(0.60)
             print(f"Som {file_name} carregado.")
             return sound
         except pygame.error as e:

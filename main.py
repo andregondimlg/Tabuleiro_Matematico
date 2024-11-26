@@ -6,4 +6,4 @@ def main():
     game.quit()
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -12,7 +12,6 @@ class Menu:
         self.question_answered = False  # Controle se a pergunta foi respondida
         self.show_question = False  # Controle de exibição da pergunta
 
-    def __init__(self):
         self.player_colors = {
             "Jogador 1": None,
             "Jogador 2": None,
@@ -29,7 +28,7 @@ class Menu:
         self.start_game_sound = self.load_sound('start.mp3')  # som ao iniciar o jogo
 
     def load_background(self):
-        path = os.path.join('assets', 'images', 'color_selection_background.jpg')
+        path = os.path.join('assets', 'images', 'seleciona_cor.png')
         try:
             image = pygame.image.load(path).convert()
             image = pygame.transform.scale(image, (SCREEN.get_width(), SCREEN.get_height()))
@@ -55,55 +54,50 @@ class Menu:
             SCREEN.blit(self.background_image, (0, 0))
         else:
             SCREEN.fill(WHITE)
-        
-        title_text = big_font.render("Seleção de Personagens", True, (0, 0, 0))
-        SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, 50))
 
-        instructions = font.render("Use as setas para alternar entre os jogadores.", True, (0, 0, 0))
-        SCREEN.blit(instructions, (SCREEN.get_width()//2 - instructions.get_width()//2, 120))
+        # Não desenha mais o título "Seleção de Personagens"
+        # title_text = big_font.render("Seleção de Personagens", True, (0, 0, 0))
+        # SCREEN.blit(title_text, (SCREEN.get_width() // 2 - title_text.get_width() // 2, 50))
 
-        current_player = self.player_names[self.selected_player_index]
-        player_indicator = font.render(f"Selecionando: {current_player}", True, (0, 0, 0))
-        SCREEN.blit(player_indicator, (SCREEN.get_width()//2 - player_indicator.get_width()//2, 160))
+    
+        # Não desenha mais os quadrados de cores
+        # y_offset = 250
+        # box_width = 100
+        # box_height = 100
+        # spacing = 150
+        # num_colors = len(PLAYER_COLORS)
+        # total_width = num_colors * box_width + (num_colors - 1) * spacing
+        # x_offset = (SCREEN.get_width() - total_width) // 2  # Centraliza horizontalmente
 
-        y_offset = 250
-        box_width = 100
-        box_height = 100
-        spacing = 150
-        num_colors = len(PLAYER_COLORS)
-        total_width = num_colors * box_width + (num_colors - 1) * spacing
-        x_offset = (SCREEN.get_width() - total_width) // 2  # Centraliza horizontalmente
+        # mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+        # for idx, (color_name, color_value) in enumerate(PLAYER_COLORS.items()):
+        #     rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
+        #     pygame.draw.rect(SCREEN, color_value, rect)
+        #     # Verifica se o mouse está sobre o retângulo
+        #     if rect.collidepoint(mouse_x, mouse_y):
+        #         habilidade_texto = COLOR_DESCRIPTIONS.get(color_name, "FOCO desconhecida.")
+        #         self.Menu_habilidade(rect, habilidade_texto)
 
-        for idx, (color_name, color_value) in enumerate(PLAYER_COLORS.items()):
-            rect = pygame.Rect(x_offset + idx * (box_width + spacing), y_offset, box_width, box_height)
-            pygame.draw.rect(SCREEN, color_value, rect)
-           # Verifica se o mouse está sobre o retângulo
-            if rect.collidepoint(mouse_x, mouse_y):
-                habilidade_texto = COLOR_DESCRIPTIONS.get(color_name, "FOCO desconhecida.")
-                self.Menu_habilidade(rect, habilidade_texto)
-
-           
-            if self.player_colors[current_player] == color_name:
-                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 5)  # Borda mais grossa
-            else:
-                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 2)  # Borda fina
-            # Exibe o nome da cor
-            color_text = font.render(color_name, True, (0, 0, 0))
-            SCREEN.blit(color_text, (rect.x + rect.width//2 - color_text.get_width()//2, rect.y + rect.height + 10))
+        #     if self.player_colors[current_player] == color_name:
+        #         pygame.draw.rect(SCREEN, (0, 0, 0), rect, 5)  # Borda mais grossa
+        #     else:
+        #         pygame.draw.rect(SCREEN, (0, 0, 0), rect, 2)  # Borda fina
+        #     # Exibe o nome da cor
+        #     color_text = font.render(color_name, True, (0, 0, 0))
+        #     SCREEN.blit(color_text, (rect.x + rect.width // 2 - color_text.get_width() // 2, rect.y + rect.height + 10))
 
         # Exibe as cores selecionadas
-        y_positions = [450, 500, 550, 600]
+        y_positions = [530, 580, 630, 680]
         for i, player_name in enumerate(self.player_names):
             personagem = self.player_colors[player_name] if self.player_colors[player_name] else 'Não selecionada'
             player_text = font.render(f"{player_name} - Personagem: {personagem}", True, (0, 0, 0))
-            SCREEN.blit(player_text, (SCREEN.get_width()//2 - player_text.get_width()//2, y_positions[i]))
+            SCREEN.blit(player_text, (SCREEN.get_width() // 2 - player_text.get_width() // 2, y_positions[i]))
 
         # Mensagem para iniciar o jogo
         if all(self.player_colors[player] for player in self.player_names) and not self.ready:
             ready_text = font.render("Pressione ENTER para começar o jogo", True, (0, 0, 0))
-            SCREEN.blit(ready_text, (SCREEN.get_width()//2 - ready_text.get_width()//2, SCREEN.get_height() - 100))
+            SCREEN.blit(ready_text, (SCREEN.get_width() // 2 - ready_text.get_width() // 2, SCREEN.get_height() - 100))
 
         pygame.display.update()
 
@@ -174,35 +168,19 @@ class Menu:
         Exibe um menu de habilidades ajustado ao retângulo.
         """
         # Calcula o tamanho do texto renderizado
-        habilidade_text_surface = font.render(habilidade, True, BLACK)
-        text_width, text_height = habilidade_text_surface.get_size()
+        habilidade_text_surface = font.render(habilidade, True, (0, 0, 0))
+        menu_width = max(habilidade_text_surface.get_width() + 20, 200)
+        menu_height = habilidade_text_surface.get_height() + 10
+        padding = 10
 
-        # Configura as dimensões do menu baseadas no tamanho do texto
-        padding = 20  # Espaçamento extra ao redor do texto
-        menu_width = max(text_width + padding, rect.width)  # Largura mínima igual ao retângulo
-        menu_height = text_height + padding
+        # Calcula a posição para centralizar o texto no menu
+        menu_x = rect.centerx - menu_width // 2
+        menu_y = rect.bottom + 5
 
-        # Calcula a posição do menu com base na posição do retângulo
-        menu_x = rect.x
-        menu_y = rect.y - menu_height - 10  # Acima do retângulo
+        # Cria o menu e renderiza o texto
+        menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
+        pygame.draw.rect(SCREEN, WHITE, menu_rect)  # Desenha o fundo branco para o menu
+        pygame.draw.rect(SCREEN, BLACK, menu_rect, 2)  # Desenha a borda preta ao redor
 
-        # Ajusta o menu para não ultrapassar os limites da tela
-        if menu_x + menu_width > SCREEN.get_width():
-            menu_x = SCREEN.get_width() - menu_width
-        if menu_y < 0:
-            menu_y = rect.y + rect.height + 10  # Move para baixo se ultrapassar o limite superior
-
-        # Cria uma superfície transparente para o menu
-        transparent_surface = pygame.Surface((menu_width, menu_height), pygame.SRCALPHA)
-        transparent_surface.fill((128, 128, 128, 220))  # Fundo cinza semitransparente
-
-        # Desenha a borda preta
-        pygame.draw.rect(transparent_surface, BLACK, transparent_surface.get_rect(), 2, border_radius=10)
-
-        # Adiciona o texto da habilidade no menu
-        text_x = (menu_width - text_width) // 2  # Centraliza o texto horizontalmente
-        text_y = (menu_height - text_height) // 2  # Centraliza o texto verticalmente
-        transparent_surface.blit(habilidade_text_surface, (text_x, text_y))
-
-        # Renderiza o menu na tela principal
-        SCREEN.blit(transparent_surface, (menu_x, menu_y))
+        SCREEN.blit(habilidade_text_surface, (menu_rect.centerx - habilidade_text_surface.get_width() // 2, menu_rect.centery - habilidade_text_surface.get_height() // 2))
+        pygame.display.update()

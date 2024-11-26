@@ -11,7 +11,11 @@ from constants import PLAYER_COLORS,HABILIDADES
 import random
 
 
+
+
 class Game:
+   
+
     def __init__(self):
         self.board = Board()
         self.players = []
@@ -28,6 +32,18 @@ class Game:
         self.menu_background = self.load_menu_background()
         self.game_background = self.load_game_background()
         self.player_count = 0
+        self.uses = { 
+            "remover_alternativas": 0,
+            "dobro_movimento": 0,
+            "trocar_pergunta": 0,
+            "bonus_por_velocidade": 0
+        }
+        self.usesturno = { 
+            "remover_alternativas": 0,
+            "dobro_movimento": 0,
+            "trocar_pergunta": 0,
+            "bonus_por_velocidade": 0
+        }
 
         pygame.mixer.init()  # Inicializa o mixer de som
 
@@ -35,8 +51,9 @@ class Game:
         self.background_sound = self.load_sound('sounds_effects/fall.mp3', background=True)
         self.keypress_sound = self.load_sound('sounds_effects/start.mp3')
 
+    
     def load_menu_background(self):
-        path = os.path.join('assets', 'images', 'menu_background.jpg')
+        path = os.path.join('assets', 'images', 'menu_background.png')
         try:
             image = pygame.image.load(path).convert()
             image = pygame.transform.scale(image, (SCREEN.get_width(), SCREEN.get_height()))
@@ -164,10 +181,6 @@ class Game:
             SCREEN.blit(self.menu_background, (0, 0))
         else:
             SCREEN.fill(WHITE)
-        title_text = big_font.render("Doze Destinos!", True, BLACK)
-        instruction_text = font.render("Pressione qualquer tecla para começar.", True, BLACK)
-        SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, SCREEN.get_height()//2 - 100))
-        SCREEN.blit(instruction_text, (SCREEN.get_width()//2 - instruction_text.get_width()//2, SCREEN.get_height()//2))
         pygame.display.update()
 
     def draw_instructions(self):
@@ -184,16 +197,16 @@ class Game:
             SCREEN.blit(instruction_text, (x, y))
 
     def draw_player_count_screen(self):
+        # Carregar a imagem de fundo diretamente
+        background_image = pygame.image.load('assets/images/unnamed.png')
 
-         # tela para seleção do número de jogadores.
-
-        SCREEN.fill(WHITE)
-        title_text = big_font.render("Selecione o número de jogadores", True, BLACK)
-        instruction_text = font.render("Use as teclas 2, 3 ou 4 para selecionar a quantidade de jogadores.", True, BLACK)
-        SCREEN.blit(title_text, (SCREEN.get_width()//2 - title_text.get_width()//2, SCREEN.get_height()//2 - 100))
-        SCREEN.blit(instruction_text, (SCREEN.get_width()//2 - instruction_text.get_width()//2, SCREEN.get_height()//2))
-
+        if background_image:
+          SCREEN.blit(background_image, (0, 0))  # Desenha a imagem de fundo na tela
+        else:
+         print("Imagem não carregada corretamente.")
+    
         pygame.display.update()
+
 
     def main_loop(self):
         while self.running:
@@ -274,7 +287,10 @@ class Game:
                     elif event.type == pygame.KEYDOWN:
                         habilidade = HABILIDADES[self.current_player().name]
                         
-                        # Uso da habilidade com a tecla 5
+                        if self.current_player().name == "Fionacci" and habilidade == "bonus_por_velocidade" and self.question_manager.show_question:
+                            self.usar_bonus_velocidade()
+
+
                         if event.key == pygame.K_5:
                             if habilidade == "remover_alternativas" and self.question_manager.show_question:
                                 self.usar_remover_alternativas()
@@ -282,8 +298,7 @@ class Game:
                                 self.usar_dobro_movimento()
                             elif habilidade == "trocar_pergunta" and self.question_manager.show_question:
                                 self.usar_trocar_pergunta()
-                            elif habilidade == "bonus_por_velocidade" and self.question_manager.show_question:
-                                self.usar_bonus_velocidade()
+                            
 
                         # Rolagem do dado com a tecla ESPAÇO
                         elif event.key == pygame.K_SPACE and not self.dice.rolling and not self.question_manager.show_question:
@@ -314,6 +329,31 @@ class Game:
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False
                                     self.next_player()
+                                elif self.usesturno["dobro_movimento"] == 1:
+                                    self.usesturno["dobro_movimento"] = 0
+                                    self.show_message(f"{self.current_player().name} - Resposta incorreta!")
+                                    self.current_player().move_back(self.dice.result*2)
+                                    self.question_manager.show_question = False
+                                    self.question_manager.question_answered = False
+                                    self.next_player()
+                                elif self.usesturno["bonus_por_velocidade"] == 1:
+                                    self.usesturno["bonus_por_velocidade"] = 0
+                                    self.show_message(f"{self.current_player().name} - Resposta incorreta!")
+                                    self.current_player().move_back(1)
+                                    self.current_player().move_back(self.dice.result)
+                                    self.question_manager.show_question = False
+                                    self.question_manager.question_answered = False
+                                    self.message = f"{self.current_player().name} não foi dessa vez que ser rapido ajudou!!"
+                                    self.next_player()
+                                elif self.usesturno["bonus_por_velocidade"] == 2:
+                                    self.usesturno["bonus_por_velocidade"] = 0
+                                    self.show_message(f"{self.current_player().name} - Resposta incorreta!")
+                                    self.current_player().move_back(2)
+                                    self.current_player().move_back(self.dice.result)
+                                    self.question_manager.show_question = False
+                                    self.question_manager.question_answered = False
+                                    self.message = f"{self.current_player().name} não foi dessa vez que ser rapido ajudou!!"
+                                    self.next_player()
                                 else:
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
                                     self.current_player().move_back(self.dice.result)
@@ -321,6 +361,8 @@ class Game:
                                     self.question_manager.question_answered = False
                                     self.next_player()
 
+
+                                    
                 # Atualização da tela
                 pygame.display.update()
                 self.clock.tick(60)
@@ -344,7 +386,11 @@ class Game:
         for Player_name in self.menu.player_names:
             self.show_message(f"{self.current_player().name}precione 5 para usar a habilidade")
 
-    def usar_remover_alternativas(self):
+    def usar_remover_alternativas(self):   
+        if self.uses["remover_alternativas"] >= 2:
+            self.message = f"{self.current_player().name} LIMITE DE HABILIDADE ATINGIDO!"
+            return 0
+        self.uses["remover_alternativas"] += 1
         if self.question_manager.current_question:
             todas_alternativas = self.question_manager.current_question["options"]
             resposta_correta = self.question_manager.current_question["answer"]
@@ -353,28 +399,45 @@ class Game:
             alternativas_restantes.append(
                 random.choice([op for op in todas_alternativas if op != resposta_correta])
             )
-            
             self.question_manager.current_question["options"] = alternativas_restantes
-    
+            
+        
     def usar_dobro_movimento(self):
-        self.dice.result *= 2
+        if self.dice.result is None:
+            return 0
+        if self.uses["dobro_movimento"] >= 2:
+            self.message = f"{self.current_player().name} LIMITE DE HABILIDADE ATINGIDO!"
+            return 0
+        self.uses["dobro_movimento"] += 1
+        self.usesturno["dobro_movimento"] += 1
+        self.current_player().move(self.dice.result)
         self.message = f"{self.current_player().name} usou DOBRO DE MOVIMENTO!"
+            
+
     
     def usar_trocar_pergunta(self):
+
+        if self.uses["trocar_pergunta"] >= 2:
+            self.message = f"{self.current_player().name} LIMITE DE HABILIDADE ATINGIDO!"
+            return 0
+        self.uses["trocar_pergunta"] += 1
         self.question_manager.get_new_question()
         self.message = f"{self.current_player().name} trocou a pergunta!"
     
     def calcular_bonus_velocidade(self, tempo_restante):
-        if tempo_restante > 20:
-            return 3
-        elif tempo_restante > 10:
+        if tempo_restante > 22 and tempo_restante < 30:
+            self.usesturno["bonus_por_velocidade"] = 2
             return 2
-        return 1
+        if tempo_restante > 18 and tempo_restante <22:
+            self.usesturno["bonus_por_velocidade"] = 1
+            return 1
+        return 0
 
     def usar_bonus_velocidade(self):
         tempo_restante = self.question_manager.time_left
         bonus = self.calcular_bonus_velocidade(tempo_restante)
-        self.current_player().move(bonus)
+        move = int(bonus/2)
+        self.current_player().move(move)
         self.message = f"{self.current_player().name} ganhou {bonus} movimentos extras pela velocidade!"
     
     
@@ -388,4 +451,3 @@ class Game:
             self.usar_trocar_pergunta()
         elif habilidade == "bonus_por_velocidade":
             self.usar_bonus_velocidade()
-

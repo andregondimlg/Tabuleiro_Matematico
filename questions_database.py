@@ -1,5 +1,12 @@
+HABILIDADES_LIMITE = {
+    "remover_alternativas": 1,
+    "dobro_movimento": 2,
+    "trocar_pergunta": 1,
+    "bonus_por_velocidade": 3
+}
+
 COLOR_DESCRIPTIONS = {
-    "Thiago": "Elimina duas alternativas quando usado",
+    "oioioi": "Elimina duas alternativas quando usado",
     "Andre": "Avança o dobro de casas que você tirar, caso acerte a pergunta",
     "Rosinha": "O jogador pode trocar sua pergunta",
     "Ureia": "Ganha bonus de acordo com a velocidade de resposta"
@@ -12,6 +19,12 @@ habilidades = [
     {"Ganha bonus de acordo com a velocidade de resposta" }
 
 ]
+HABILIDADES = {
+    "Thiago": "remover_alternativas",
+    "Andre": "dobro_movimento",
+    "Rosinha": "trocar_pergunta",
+    "Ureia": "bonus_por_velocidade"
+}
 
 
 questions_list_2 = [
@@ -127,25 +140,25 @@ questions_list= [
     "answer": "O(log n)"
 },
 {
-    "id": "2",
+    "id": "1",
     "question": "Qual é o pior caso do Bubble Sort?",
     "options": ["O(n)", "O(n²)", "O(log n)", "O(n log n)"],
     "answer": "O(n²)"
 },
 {
-    "id": "3",
+    "id": "1",
     "question": "Qual estrutura acessa o meio mais rápido?",
     "options": ["Fila", "Pilha", "Lista Dupla", "Vetores"],
     "answer": "Vetores"
 },
 {
-    "id": "4",
+    "id": "1",
     "question": "Qual algoritmo encontra o menor valor em uma lista?",
     "options": ["Bubble Sort", "Busca Linear", "Busca Binária", "Insertion Sort"],
     "answer": "Busca Linear"
 },
 {
-    "id": "5",
+    "id": "1",
     "question": "Qual é o pior caso do QuickSort?",
     "options": ["O(n)", "O(n²)", "O(log n)", "O(n log n)"],
     "answer": "O(n²)"

@@ -1,9 +1,24 @@
 import pygame
 import random
+import player
 from constants import SCREEN, GRAY, BLACK, RED, font
 from questions_database import questions_list
 
 class QuestionManager:
+
+    def id_pergunta(self):
+        if self.position >= 0 and self.position <= 11:
+            id = 1
+        elif self.position >= 12 and self.position <= 23:
+            id = 2
+        elif self.position >= 24 and self.position <= 34:
+            id = 3
+        elif self.position >= 35 and self.position <= 46:
+             id = 4
+        else:
+            id = None  # Caso a posição não se encaixe em nenhum intervalo, define como None
+    
+    
     def __init__(self):
         # Inicializa a lista de perguntas e configurações
         self.questions = questions_list.copy()  # Copia a lista de perguntas do banco de dados
@@ -17,6 +32,7 @@ class QuestionManager:
     def get_new_question(self):
         # Seleciona uma nova pergunta aleatoriamente
         if self.questions:
+            
             self.current_question = random.choice(self.questions)  # Escolhe aleatoriamente
             self.questions.remove(self.current_question)  # Remove a pergunta já selecionada
             self.question_answered = False  # Marca que a pergunta ainda não foi respondida

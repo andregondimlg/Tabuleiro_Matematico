@@ -7,7 +7,9 @@ from player import Player
 from dice import Dice
 from question import QuestionManager
 from menu import Menu
-from constants import PLAYER_COLORS
+from constants import PLAYER_COLORS,HABILIDADES
+import random
+
 
 class Game:
     def __init__(self):
@@ -172,6 +174,7 @@ class Game:
         instructions = [
             f"Vez do {self.current_player().name}",
             "Pressione ESPAÇO para rolar o dado.",
+            "Pressione 5 para usar sua habilidade especial.",
         ]
         margin = 50
         for i, text in enumerate(instructions):
@@ -194,6 +197,7 @@ class Game:
 
     def main_loop(self):
         while self.running:
+            # Exibição da tela inicial
             if self.in_initial_screen:
                 self.draw_initial_screen()
                 for event in pygame.event.get():
@@ -204,8 +208,10 @@ class Game:
                             self.keypress_sound.play()
                         self.fade_in_out(fade_out=True)
                         self.in_initial_screen = False
-                        self.in_player_count_screen = True  # Ir para a tela de número de jogadores
+                        self.in_player_count_screen = True
                         self.fade_in_out(fade_out=False)
+
+            # Seleção do número de jogadores
             elif self.in_player_count_screen:
                 self.draw_player_count_screen()
                 for event in pygame.event.get():
@@ -214,11 +220,13 @@ class Game:
                     elif event.type == pygame.KEYDOWN:
                         if event.key in [pygame.K_2, pygame.K_3, pygame.K_4]:
                             self.player_count = int(event.unicode)
-                            self.menu.player_names = self.menu.player_names[:self.player_count]  # Ajusta o número de jogadores no menu
+                            self.menu.player_names = self.menu.player_names[:self.player_count]
                             self.in_player_count_screen = False
-                            self.in_menu = True  # Ir para o menu de seleção de personagens
+                            self.in_menu = True
                             if self.keypress_sound:
                                 self.keypress_sound.play()
+
+            # Tela de seleção de personagens
             elif self.in_menu:
                 self.menu.draw()
                 for event in pygame.event.get():
@@ -229,18 +237,24 @@ class Game:
                         if self.menu.ready:
                             self.start_game()
                             self.in_menu = False
+
+            # Durante o jogo
             else:
+                # Desenha o fundo do tabuleiro ou tela de jogo
                 if self.game_background:
                     SCREEN.blit(self.game_background, (0, 0))
                 else:
                     SCREEN.fill(WHITE)
 
+                # Desenha os jogadores no tabuleiro
                 for player in self.players:
                     player.draw()
 
+                # Instruções e estado do dado
                 self.draw_instructions()
                 self.dice.draw_result(self.board, self.message)
 
+                # Exibição de perguntas
                 if self.question_manager.show_question and self.question_manager.current_question:
                     self.question_manager.update_time_left()
                     if self.question_manager.is_time_up():
@@ -252,26 +266,26 @@ class Game:
                     else:
                         self.question_manager.draw_question_interface()
 
+                # Processamento de eventos
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.running = False
+
                     elif event.type == pygame.KEYDOWN:
-                        if self.question_manager.show_question and not self.question_manager.question_answered:
-                            selected_option = self.question_manager.handle_event(event)
-                            if selected_option is not None:
-                                self.question_manager.question_answered = True
-                                selected_answer = self.question_manager.current_question["options"][selected_option]
-                                if selected_answer == self.question_manager.current_question["answer"]:
-                                    self.show_message(f"{self.current_player().name} - Resposta correta!")
-                                    self.question_manager.show_question = False
-                                    self.question_manager.question_answered = False
-                                    self.next_player()
-                                else:
-                                    self.show_message(f"{self.current_player().name} - Resposta incorreta! A resposta correta era: {self.question_manager.current_question['answer']}")
-                                    self.current_player().move_back(self.dice.result)
-                                    self.question_manager.show_question = False
-                                    self.question_manager.question_answered = False
-                                    self.next_player()
+                        habilidade = HABILIDADES[self.current_player().name]
+                        
+                        # Uso da habilidade com a tecla 5
+                        if event.key == pygame.K_5:
+                            if habilidade == "remover_alternativas" and self.question_manager.show_question:
+                                self.usar_remover_alternativas()
+                            elif habilidade == "dobro_movimento" and not self.dice.rolling:
+                                self.usar_dobro_movimento()
+                            elif habilidade == "trocar_pergunta" and self.question_manager.show_question:
+                                self.usar_trocar_pergunta()
+                            elif habilidade == "bonus_por_velocidade" and self.question_manager.show_question:
+                                self.usar_bonus_velocidade()
+
+                        # Rolagem do dado com a tecla ESPAÇO
                         elif event.key == pygame.K_SPACE and not self.dice.rolling and not self.question_manager.show_question:
                             self.dice.result = None
                             self.message = ""
@@ -287,14 +301,37 @@ class Game:
                                 else:
                                     self.next_player()
 
-            pygame.display.update()
-            self.clock.tick(60)
+                        # Resposta às perguntas
+                        elif self.question_manager.show_question and not self.question_manager.question_answered:
+                            selected_option = self.question_manager.handle_event(event)
+                            if selected_option is not None:
+                                self.question_manager.question_answered = True
+                                selected_answer = self.question_manager.current_question["options"][selected_option]
+                                if selected_answer == self.question_manager.current_question["answer"]:
+                                    self.show_message(f"{self.current_player().name} - Resposta correta!")
+                                    if habilidade == "bonus_por_velocidade":
+                                        self.usar_bonus_velocidade()
+                                    self.question_manager.show_question = False
+                                    self.question_manager.question_answered = False
+                                    self.next_player()
+                                else:
+                                    self.show_message(f"{self.current_player().name} - Resposta incorreta!")
+                                    self.current_player().move_back(self.dice.result)
+                                    self.question_manager.show_question = False
+                                    self.question_manager.question_answered = False
+                                    self.next_player()
+
+                # Atualização da tela
+                pygame.display.update()
+                self.clock.tick(60)
+
 
     def start_game(self):
-        for player_name in self.menu.player_names:
-            color_name = self.menu.player_colors[player_name]
-            color = PLAYER_COLORS[color_name]
-            self.players.append(Player(self.board, player_name, color, self.board.path_points))
+        for i, player_name in enumerate(self.menu.player_names):
+            character_name = self.menu.player_colors[player_name]
+            color = PLAYER_COLORS[character_name]
+            self.players.append(Player(self.board, character_name, color, self.board.path_points))
+
 
     def current_player(self):
         return self.players[self.current_player_index]
@@ -306,3 +343,49 @@ class Game:
     def habilidades (self):
         for Player_name in self.menu.player_names:
             self.show_message(f"{self.current_player().name}precione 5 para usar a habilidade")
+
+    def usar_remover_alternativas(self):
+        if self.question_manager.current_question:
+            todas_alternativas = self.question_manager.current_question["options"]
+            resposta_correta = self.question_manager.current_question["answer"]
+            
+            alternativas_restantes = [resposta_correta]
+            alternativas_restantes.append(
+                random.choice([op for op in todas_alternativas if op != resposta_correta])
+            )
+            
+            self.question_manager.current_question["options"] = alternativas_restantes
+    
+    def usar_dobro_movimento(self):
+        self.dice.result *= 2
+        self.message = f"{self.current_player().name} usou DOBRO DE MOVIMENTO!"
+    
+    def usar_trocar_pergunta(self):
+        self.question_manager.get_new_question()
+        self.message = f"{self.current_player().name} trocou a pergunta!"
+    
+    def calcular_bonus_velocidade(self, tempo_restante):
+        if tempo_restante > 20:
+            return 3
+        elif tempo_restante > 10:
+            return 2
+        return 1
+
+    def usar_bonus_velocidade(self):
+        tempo_restante = self.question_manager.time_left
+        bonus = self.calcular_bonus_velocidade(tempo_restante)
+        self.current_player().move(bonus)
+        self.message = f"{self.current_player().name} ganhou {bonus} movimentos extras pela velocidade!"
+    
+    
+    def turno_jogador(self):
+        habilidade = HABILIDADES[self.current_player().name]
+        if habilidade == "remover_alternativas" and self.question_manager.show_question:
+            self.usar_remover_alternativas()
+        elif habilidade == "dobro_movimento" and not self.dice.rolling:
+            self.usar_dobro_movimento()
+        elif habilidade == "trocar_pergunta" and self.question_manager.show_question:
+            self.usar_trocar_pergunta()
+        elif habilidade == "bonus_por_velocidade":
+            self.usar_bonus_velocidade()
+

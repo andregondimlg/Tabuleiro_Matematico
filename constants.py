@@ -24,3 +24,15 @@ PLAYER_COLORS = { # personagens
 
 font = pygame.font.Font(None, 36)
 big_font = pygame.font.Font(None, 70)
+
+HABILIDADES = {
+    "Thiago": "remover_alternativas",
+    "Andre": "dobro_movimento",
+    "Rosinha": "trocar_pergunta",
+    "Ureia": "bonus_por_velocidade",
+    "Jogador 1": "remover_alternativas", 
+    "Jogador 2": "dobro_movimento",
+    "Jogador 3": "trocar_pergunta",
+    "Jogador 4": "bonus_por_velocidade",
+}
+

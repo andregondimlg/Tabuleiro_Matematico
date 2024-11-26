@@ -11,7 +11,7 @@ class Player:
         self.color = color
 
     def move(self, steps):
-        self.position += steps
+        self.position += steps 
         if self.position >= len(self.board.board_positions):
             self.position = self.position % len(self.board.board_positions)
             return True  # Completou uma volta

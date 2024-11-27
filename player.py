@@ -12,11 +12,14 @@ class Player:
         self.path_points = path_points  # Armazena a lista de pontos
 
     def move(self, steps):
-        self.position += steps 
+        previous_position = self.position
+        self.position += steps
         if self.position >= len(self.path_points):
             self.position = self.position % len(self.path_points)
-            return True  # Completou uma volta
-        return False
+            self.lap_completed = True
+        else:
+            self.lap_completed = False
+        return self.lap_completed
 
     def move_back(self, steps):
         self.position -= steps

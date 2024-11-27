@@ -29,6 +29,13 @@ class QuestionManager:
         self.time_limit = 30  # Limite de tempo para responder (em segundos)
         self.time_left = self.time_limit  # Tempo restante
 
+    def reset(self):
+        """Reseta o estado do gerenciador de perguntas."""
+        self.current_question = None
+        self.show_question = False
+        self.question_answered = False
+        self.time_left = 30
+
     def get_new_question(self):
         # Seleciona uma nova pergunta aleatoriamente
         if self.questions:

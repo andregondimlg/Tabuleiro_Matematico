@@ -7,15 +7,10 @@ from player import Player
 from dice import Dice
 from question import QuestionManager
 from menu import Menu
-from constants import PLAYER_COLORS,HABILIDADES
+from constants import PLAYER_COLORS, HABILIDADES
 import random
 
-
-
-
 class Game:
-   
-
     def __init__(self):
         self.board = Board()
         self.players = []
@@ -32,18 +27,20 @@ class Game:
         self.menu_background = self.load_menu_background()
         self.game_background = self.load_game_background()
         self.player_count = 0
-        self.uses = { 
+        self.uses = {
             "remover_alternativas": 0,
             "dobro_movimento": 0,
             "trocar_pergunta": 0,
             "bonus_por_velocidade": 0
         }
-        self.usesturno = { 
+        self.usesturno = {
             "remover_alternativas": 0,
             "dobro_movimento": 0,
             "trocar_pergunta": 0,
             "bonus_por_velocidade": 0
         }
+        self.game_over = False  # Novo atributo
+        self.winner = None      # Novo atributo
 
         pygame.mixer.init()  # Inicializa o mixer de som
 
@@ -51,7 +48,6 @@ class Game:
         self.background_sound = self.load_sound('sounds_effects/fall.mp3', background=True)
         self.keypress_sound = self.load_sound('sounds_effects/start.mp3')
 
-    
     def load_menu_background(self):
         path = os.path.join('assets', 'images', 'menu_background.png')
         try:
@@ -115,7 +111,6 @@ class Game:
             text_rect = text_surface.get_rect(center=(rect.x + rect.width // 2, y_offset))
             surface.blit(text_surface, text_rect)
             y_offset += font.size(line)[1]
-
 
     def show_message(self, text, duration=2000):
         window_width, window_height = 720, 80
@@ -201,16 +196,27 @@ class Game:
         background_image = pygame.image.load('assets/images/unnamed.png')
 
         if background_image:
-          SCREEN.blit(background_image, (0, 0))  # Desenha a imagem de fundo na tela
+            SCREEN.blit(background_image, (0, 0))  # Desenha a imagem de fundo na tela
         else:
-         print("Imagem não carregada corretamente.")
-    
-        pygame.display.update()
+            print("Imagem não carregada corretamente.")
 
+        pygame.display.update()
 
     def main_loop(self):
         s1 = 0
         while self.running:
+
+            if self.game_over:
+                self.draw_game_over_screen()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
+                    elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                        self.reset_game()  # Reinicia o jogo ao pressionar uma tecla ou clique
+                pygame.display.update()
+                self.clock.tick(60)
+                continue  # Pula o restante do loop e volta ao início
+
             # Exibição da tela inicial
             if self.in_initial_screen:
                 self.draw_initial_screen()
@@ -287,20 +293,19 @@ class Game:
 
                     elif event.type == pygame.KEYDOWN:
                         habilidade = HABILIDADES[self.current_player().name]
-                        
+
                         if self.current_player().name == "Fionacci" and habilidade == "bonus_por_velocidade" and self.question_manager.show_question:
                             self.usar_bonus_velocidade()
 
-
                         if event.key == pygame.K_5 and s1 == 0:
                             s1 = 1
+
                             if habilidade == "remover_alternativas" and self.question_manager.show_question:
                                 self.usar_remover_alternativas()
                             elif habilidade == "dobro_movimento" and not self.dice.rolling:
                                 self.usar_dobro_movimento()
                             elif habilidade == "trocar_pergunta" and self.question_manager.show_question:
                                 self.usar_trocar_pergunta()
-                            
 
                         # Rolagem do dado com a tecla ESPAÇO
                         elif event.key == pygame.K_SPACE and not self.dice.rolling and not self.question_manager.show_question:
@@ -312,19 +317,20 @@ class Game:
                                 self.dice.result = result
                                 completed_lap = self.current_player().move(result)
                                 if completed_lap:
-                                    self.show_message(f"{self.current_player().name} completou uma volta!")
-                                if (self.current_player().position + 1) % 1 == 0:
+                                    # Não finaliza o jogo ainda; espera pela resposta da pergunta
+                                    self.question_manager.get_new_question()
+                                elif (self.current_player().position + 1) % 1 == 0:
                                     self.question_manager.get_new_question()
                                 else:
                                     self.next_player()
 
-                        # Resposta às perguntas
                         elif self.question_manager.show_question and not self.question_manager.question_answered:
                             selected_option = self.question_manager.handle_event(event)
                             if selected_option is not None:
                                 self.question_manager.question_answered = True
                                 selected_answer = self.question_manager.current_question["options"][selected_option]
                                 if selected_answer == self.question_manager.current_question["answer"]:
+                                    # Resposta correta
                                     self.show_message(f"{self.current_player().name} - Resposta correta!")
                                     s1= 0
                                     if habilidade == "bonus_por_velocidade":
@@ -360,20 +366,70 @@ class Game:
                                     self.question_manager.question_answered = False
                                     self.message = f"{self.current_player().name} não foi dessa vez que ser rapido ajudou!!"
                                     self.next_player()
+
+                                    if self.current_player().lap_completed:
+                                        self.winner = self.current_player()
+                                        self.game_over = True
+                                    else:
+                                        self.next_player()
                                 else:
+                                    # Resposta incorreta
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
+
                                     self.current_player().move_back(self.dice.result)
                                     s1= 0
+
+                                    # Aplicar penalidades ou efeitos de habilidades
+                                    if self.usesturno["dobro_movimento"] == 1:
+                                        self.usesturno["dobro_movimento"] = 0
+                                    elif self.usesturno["bonus_por_velocidade"] == 1:
+                                        self.usesturno["bonus_por_velocidade"] = 0
+                                    elif self.usesturno["bonus_por_velocidade"] == 2:
+                                        self.usesturno["bonus_por_velocidade"] = 0
+                                    else:
+                                        self.current_player().move_back(0)
+
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False
+                                    self.current_player().lap_completed = False  # Reseta o status de volta completada
                                     self.next_player()
 
-
-                                    
                 # Atualização da tela
                 pygame.display.update()
                 self.clock.tick(60)
 
+    def reset_game(self):
+        """Reseta o estado do jogo para reiniciar."""
+        self.in_initial_screen = False
+        self.in_player_count_screen = True
+        self.in_menu = False
+        self.game_over = False
+        self.players = []
+        self.current_player_index = 0
+        self.winner = None
+        self.uses = {
+            "remover_alternativas": 0,
+            "dobro_movimento": 0,
+            "trocar_pergunta": 0,
+            "bonus_por_velocidade": 0
+        }
+        self.usesturno = {
+            "remover_alternativas": 0,
+            "dobro_movimento": 0,
+            "trocar_pergunta": 0,
+            "bonus_por_velocidade": 0
+        }
+        self.menu.ready = False
+        self.menu.player_colors = {
+            "Jogador 1": None,
+            "Jogador 2": None,
+            "Jogador 3": None,
+            "Jogador 4": None
+        }
+        self.menu.player_names = ["Jogador 1", "Jogador 2", "Jogador 3", "Jogador 4"]
+        self.dice.result = None
+        self.message = ""
+        self.question_manager.reset() 
 
     def start_game(self):
         for i, player_name in enumerate(self.menu.player_names):
@@ -381,19 +437,17 @@ class Game:
             color = PLAYER_COLORS[character_name]
             self.players.append(Player(self.board, character_name, color, self.board.path_points))
 
-
     def current_player(self):
         return self.players[self.current_player_index]
 
     def next_player(self):
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
-
-    def habilidades (self):
+    def habilidades(self):
         for Player_name in self.menu.player_names:
-            self.show_message(f"{self.current_player().name}precione 5 para usar a habilidade")
+            self.show_message(f"{self.current_player().name} pressione 5 para usar a habilidade")
 
-    def usar_remover_alternativas(self):   
+    def usar_remover_alternativas(self):
         if self.uses["remover_alternativas"] >= 2:
             self.message = f"{self.current_player().name} LIMITE DE HABILIDADE ATINGIDO!"
             return 0
@@ -401,14 +455,13 @@ class Game:
         if self.question_manager.current_question:
             todas_alternativas = self.question_manager.current_question["options"]
             resposta_correta = self.question_manager.current_question["answer"]
-            
+
             alternativas_restantes = [resposta_correta]
             alternativas_restantes.append(
                 random.choice([op for op in todas_alternativas if op != resposta_correta])
             )
             self.question_manager.current_question["options"] = alternativas_restantes
-            
-        
+
     def usar_dobro_movimento(self):
         if self.dice.result is None:
             return 0
@@ -419,23 +472,20 @@ class Game:
         self.usesturno["dobro_movimento"] += 1
         self.current_player().move(self.dice.result)
         self.message = f"{self.current_player().name} usou DOBRO DE MOVIMENTO!"
-            
 
-    
     def usar_trocar_pergunta(self):
-
         if self.uses["trocar_pergunta"] >= 2:
             self.message = f"{self.current_player().name} LIMITE DE HABILIDADE ATINGIDO!"
             return 0
         self.uses["trocar_pergunta"] += 1
         self.question_manager.get_new_question()
         self.message = f"{self.current_player().name} trocou a pergunta!"
-    
+
     def calcular_bonus_velocidade(self, tempo_restante):
-        if tempo_restante > 22 and tempo_restante < 30:
+        if 22 < tempo_restante < 30:
             self.usesturno["bonus_por_velocidade"] = 2
             return 2
-        if tempo_restante > 18 and tempo_restante <22:
+        if 18 < tempo_restante <= 22:
             self.usesturno["bonus_por_velocidade"] = 1
             return 1
         return 0
@@ -443,11 +493,10 @@ class Game:
     def usar_bonus_velocidade(self):
         tempo_restante = self.question_manager.time_left
         bonus = self.calcular_bonus_velocidade(tempo_restante)
-        move = int(bonus/2)
+        move = int(bonus / 2)
         self.current_player().move(move)
         self.message = f"{self.current_player().name} ganhou {bonus} movimentos extras pela velocidade!"
-    
-    
+
     def turno_jogador(self):
         habilidade = HABILIDADES[self.current_player().name]
         if habilidade == "remover_alternativas" and self.question_manager.show_question:
@@ -458,3 +507,22 @@ class Game:
             self.usar_trocar_pergunta()
         elif habilidade == "bonus_por_velocidade":
             self.usar_bonus_velocidade()
+
+    def draw_game_over_screen(self):
+        # Limpa a tela
+        SCREEN.fill(BLACK)
+
+        # Exibe "Fim de Jogo"
+        game_over_text = big_font.render("Fim de Jogo", True, WHITE)
+        game_over_rect = game_over_text.get_rect(center=(SCREEN.get_width() // 2, SCREEN.get_height() // 2 - 50))
+        SCREEN.blit(game_over_text, game_over_rect)
+
+        # Exibe o nome do vencedor
+        winner_text = big_font.render(f"{self.winner.name} venceu!", True, WHITE)
+        winner_rect = winner_text.get_rect(center=(SCREEN.get_width() // 2, SCREEN.get_height() // 2 + 50))
+        SCREEN.blit(winner_text, winner_rect)
+
+        # Mensagem para retornar ao menu
+        continue_text = font.render("Pressione qualquer tecla para voltar ao menu", True, WHITE)
+        continue_rect = continue_text.get_rect(center=(SCREEN.get_width() // 2, SCREEN.get_height() // 2 + 120))
+        SCREEN.blit(continue_text, continue_rect)

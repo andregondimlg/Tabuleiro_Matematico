@@ -50,23 +50,26 @@ class Menu:
             return None
 
     def draw(self):
+        current_player = self.player_names[self.selected_player_index]
         if self.background_image:
             SCREEN.blit(self.background_image, (0, 0))
         else:
             SCREEN.fill(WHITE)
 
+
+
         # Não desenha mais o título "Seleção de Personagens"
-        # title_text = big_font.render("Seleção de Personagens", True, (0, 0, 0))
-        # SCREEN.blit(title_text, (SCREEN.get_width() // 2 - title_text.get_width() // 2, 50))
+        title_text = big_font.render("Seleção de Personagens", True, (0, 0, 0))
+        SCREEN.blit(title_text, (SCREEN.get_width() // 2 - title_text.get_width() // 2, 50))
 
     
-        # Não desenha mais os quadrados de cores
-        # y_offset = 250
-        # box_width = 100
-        # box_height = 100
-        # spacing = 150
-        # num_colors = len(PLAYER_COLORS)
-        # total_width = num_colors * box_width + (num_colors - 1) * spacing
+         # Não desenha mais os quadrados de cores
+        '''y_offset = 250
+        box_width = 100
+        box_height = 100
+        spacing = 150
+        num_colors = len(PLAYER_COLORS)
+        total_width = num_colors * box_width + (num_colors - 1) * spacing'''
         # x_offset = (SCREEN.get_width() - total_width) // 2  # Centraliza horizontalmente
 
         # mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -86,6 +89,7 @@ class Menu:
         #     # Exibe o nome da cor
         #     color_text = font.render(color_name, True, (0, 0, 0))
         #     SCREEN.blit(color_text, (rect.x + rect.width // 2 - color_text.get_width() // 2, rect.y + rect.height + 10))
+
 
         # Exibe as cores selecionadas
         y_positions = [530, 580, 630, 680]

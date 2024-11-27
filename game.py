@@ -209,6 +209,7 @@ class Game:
 
 
     def main_loop(self):
+        s1 = 0
         while self.running:
             # Exibição da tela inicial
             if self.in_initial_screen:
@@ -291,7 +292,8 @@ class Game:
                             self.usar_bonus_velocidade()
 
 
-                        if event.key == pygame.K_5:
+                        if event.key == pygame.K_5 and s1 == 0:
+                            s1 = 1
                             if habilidade == "remover_alternativas" and self.question_manager.show_question:
                                 self.usar_remover_alternativas()
                             elif habilidade == "dobro_movimento" and not self.dice.rolling:
@@ -324,6 +326,7 @@ class Game:
                                 selected_answer = self.question_manager.current_question["options"][selected_option]
                                 if selected_answer == self.question_manager.current_question["answer"]:
                                     self.show_message(f"{self.current_player().name} - Resposta correta!")
+                                    s1= 0
                                     if habilidade == "bonus_por_velocidade":
                                         self.usar_bonus_velocidade()
                                     self.question_manager.show_question = False
@@ -331,6 +334,7 @@ class Game:
                                     self.next_player()
                                 elif self.usesturno["dobro_movimento"] == 1:
                                     self.usesturno["dobro_movimento"] = 0
+                                    s1= 0
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
                                     self.current_player().move_back(self.dice.result*2)
                                     self.question_manager.show_question = False
@@ -338,6 +342,7 @@ class Game:
                                     self.next_player()
                                 elif self.usesturno["bonus_por_velocidade"] == 1:
                                     self.usesturno["bonus_por_velocidade"] = 0
+                                    s1= 0
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
                                     self.current_player().move_back(1)
                                     self.current_player().move_back(self.dice.result)
@@ -347,6 +352,7 @@ class Game:
                                     self.next_player()
                                 elif self.usesturno["bonus_por_velocidade"] == 2:
                                     self.usesturno["bonus_por_velocidade"] = 0
+                                    s1= 0
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
                                     self.current_player().move_back(2)
                                     self.current_player().move_back(self.dice.result)
@@ -357,6 +363,7 @@ class Game:
                                 else:
                                     self.show_message(f"{self.current_player().name} - Resposta incorreta!")
                                     self.current_player().move_back(self.dice.result)
+                                    s1= 0
                                     self.question_manager.show_question = False
                                     self.question_manager.question_answered = False
                                     self.next_player()

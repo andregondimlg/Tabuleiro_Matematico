@@ -6,10 +6,10 @@ HABILIDADES_LIMITE = {
 }
 
 COLOR_DESCRIPTIONS = {
-    "oioioi": "Elimina duas alternativas quando usado",
-    "Andre": "Avança o dobro de casas que você tirar, caso acerte a pergunta",
-    "Rosinha": "O jogador pode trocar sua pergunta",
-    "Ureia": "Ganha bonus de acordo com a velocidade de resposta"
+    "Willy Cat": "Elimina duas alternativas quando usado",
+    "Dr Newton": "Avança o dobro de casas que você tirar, caso acerte a pergunta",
+    "Sir Pi-thon": "O jogador pode trocar sua pergunta",
+    "Fionacci": "Ganha bonus de acordo com a velocidade de resposta"
 }
 
 habilidades = [
@@ -20,10 +20,10 @@ habilidades = [
 
 ]
 HABILIDADES = {
-    "Thiago": "remover_alternativas",
-    "Andre": "dobro_movimento",
-    "Rosinha": "trocar_pergunta",
-    "Ureia": "bonus_por_velocidade"
+    "Willy Cat": "remover_alternativas",
+    "Dr Newton": "dobro_movimento",
+    "Sir Pi-thon": "trocar_pergunta",
+    "Fionacci": "bonus_por_velocidade"
 }
 
 
